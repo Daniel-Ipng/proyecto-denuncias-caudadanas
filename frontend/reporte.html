@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes y Estadísticas - Reporte Urbano</title>
+    <link rel="stylesheet" href="css/reporte-style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"></div>
+            <span>Reporte Urbano</span>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="dashboard.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            <a href="mis-denuncias.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>Mis Denuncias</span>
+            </a>
+            <a href="mapa.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+                <span>Mapa</span>
+            </a>
+            <a href="reporte.html" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
+                    <path d="M16 3h5v5"></path>
+                    <path d="M9.5 15.5L21 4"></path>
+                </svg>
+                <span>Reportes</span>
+            </a>
+            <a href="configuracion.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                <span>Configuración</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <a href="../../index/index.html" class="nav-item logout">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                <span>Cerrar Sesión</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <h1>Reportes y Estadísticas</h1>
+                <p>Análisis y métricas de las denuncias ciudadanas</p>
+            </div>
+            <div class="header-right">
+                <button class="icon-btn" id="notificationBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="badge">3</span>
+                </button>
+                <div class="profile-menu">
+                    <img src="https://ui-avatars.com/api/?name=Juan+Perez&background=0066FF&color=fff" alt="Perfil">
+                    <div class="profile-dropdown">
+                            <a href="../dashboard/configuracion.html">Mi Perfil</a>
+                            <a href="../dashboard/configuracion.html">Configuración</a>
+                            <a href="../usuario/login.html">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Filter Section -->
+        <section class="filter-section">
+            <div class="filter-controls">
+                <div class="filter-group">
+                    <label for="dateRange">Rango de Fechas</label>
+                    <select id="dateRange" class="filter-select">
+                        <option value="7">Últimos 7 días</option>
+                        <option value="30">Último mes</option>
+                        <option value="90">Últimos 3 meses</option>
+                        <option value="365">Último año</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="district">Distrito</label>
+                    <select id="district" class="filter-select">
+                        <option value="all">Todos los distritos</option>
+                        <option value="Wanchaq">Miraflores</option>
+                        <option value="san Sebastian">San Isidro</option>
+                        <option value="San Jeronimo">Barranco</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="category">Categoría</label>
+                    <select id="category" class="filter-select">
+                        <option value="all">Todas las categorías</option>
+                        <option value="infrastructure">Infraestructura</option>
+                        <option value="security">Seguridad</option>
+                        <option value="environment">Medio Ambiente</option>
+                    </select>
+                </div>
+            </div>
+            <div class="export-controls">
+                <button class="btn-export pdf">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                    Exportar PDF
+                </button>
+                <button class="btn-export excel">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <line x1="10" y1="9" x2="8" y2="9"></line>
+                    </svg>
+                    Exportar Excel
+                </button>
+            </div>
+        </section>
+
+        <!-- Stats Grid -->
+        <section class="stats-section">
+            <div class="stat-card">
+                <div class="stat-icon blue">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3>Total Denuncias</h3>
+                    <p class="stat-number">245</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon orange">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3>Tiempo Promedio</h3>
+                    <p class="stat-number">5.2 días</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon purple">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3>Tasa de Resolución</h3>
+                    <p class="stat-number">78%</p>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon green">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3>Satisfacción</h3>
+                    <p class="stat-number">4.5/5</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts Grid -->
+        <section class="charts-grid">
+            <!-- Denuncias por Distrito -->
+            <div class="chart-card">
+                <h3>Denuncias por Distrito</h3>
+                <canvas id="districtChart"></canvas>
+            </div>
+
+            <!-- Tipos de Problemas -->
+            <div class="chart-card">
+                <h3>Tipos de Problemas</h3>
+                <canvas id="problemTypeChart"></canvas>
+            </div>
+
+            <!-- Tiempo de Respuesta -->
+            <div class="chart-card">
+                <h3>Tiempo de Respuesta Promedio</h3>
+                <canvas id="responseTimeChart"></canvas>
+            </div>
+
+            <!-- Estado de Denuncias -->
+            <div class="chart-card">
+                <h3>Estado de Denuncias</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+        </section>
+        
+        <!-- Seguimiento de Denuncias -->
+        <section id="seguimiento-section" class="charts-grid" style="margin-top:24px;">
+            <div class="chart-card" style="grid-column: 1 / -1;">
+                <h3>Seguimiento de Mis Denuncias</h3>
+                <div style="display:flex;gap:12px;align-items:center;margin:12px 0;">
+                    <label for="statusFilter" style="font-weight:600;color:#4b5563;">Filtrar por estado:</label>
+                    <select id="statusFilter" style="padding:8px;border-radius:6px;border:1px solid #e5e7eb;">
+                        <option value="all">Todos</option>
+                        <option value="pending">Pendiente</option>
+                        <option value="in-progress">En Proceso</option>
+                        <option value="resolved">Resuelta</option>
+                    </select>
+                </div>
+                <div class="report-list">
+                    <div class="reports-column" id="reportList">
+                        <!-- Lista de denuncias generada por JS -->
+                    </div>
+                    <div class="map-column">
+                        <div id="seguimientoMap" class="map-small"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Detalle modal -->
+        <div id="detailModal" class="detail-modal" style="display:none;">
+            <div class="detail-card">
+                <div id="detailContent">
+                    <!-- Contenido generado por JS -->
+                </div>
+                <div class="detail-actions">
+                    <button id="closeDetail" class="btn-secondary">Cerrar</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/reporte.script.js"></script>
+    <script src="js/dashboard-nav.js"></script>
+</body>
+</html>
