@@ -1,25 +1,45 @@
 const mysql = require('mysql2');
 require('dotenv').config();
 
-// 1. Crear la conexión a la base de datos usando las variables del archivo .env
-const db = mysql.createConnection({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME
-});
+// Configuración de la base de datos con soporte para Railway
+const dbConfig = {
+    host: process.env.DB_HOST || process.env.MYSQLHOST,
+    user: process.env.DB_USER || process.env.MYSQLUSER,
+    password: process.env.DB_PASSWORD || process.env.MYSQLPASSWORD,
+    database: process.env.DB_NAME || process.env.MYSQLDATABASE,
+    port: process.env.DB_PORT || process.env.MYSQLPORT || 3306,
+    // Configuraciones adicionales para Railway
+    connectTimeout: 60000,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+};
 
-// 2. Conectar a la base de datos y verificar si hay errores
+// Crear la conexión
+const db = mysql.createConnection(dbConfig);
+
+// Conectar a la base de datos
 db.connect(err => {
     if (err) {
-        // Si hay un error, lo muestra en la consola y detiene la ejecución
         console.error('❌ Error de conexión a la base de datos:', err);
+        console.error('Configuración intentada:', {
+            host: dbConfig.host,
+            user: dbConfig.user,
+            database: dbConfig.database,
+            port: dbConfig.port
+        });
         return;
     }
-    // Si la conexión es exitosa, muestra un mensaje de confirmación
     console.log('✅ Conectado exitosamente a la base de datos MySQL.');
 });
 
-// 3. Exportar la conexión para que otros archivos (como los controladores) puedan usarla
-// ESTA LÍNEA ESENCIAL es la que soluciona el error "db.query is not a function"
+// Manejar desconexiones
+db.on('error', (err) => {
+    console.error('Error de base de datos:', err);
+    if (err.code === 'PROTOCOL_CONNECTION_LOST') {
+        console.log('Reconectando a la base de datos...');
+    }
+});
+
+// Exportar la conexión
 module.exports = db;
