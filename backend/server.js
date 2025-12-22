@@ -8,26 +8,26 @@ const authRoutes = require('./src/routes/auth');
 const denunciaRoutes = require('./src/routes/denuncias');
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3000;
 
-// Middlewares esenciales
+// Middlewares
 app.use(cors());
-app.use(express.json()); // Para leer JSON
-app.use(express.urlencoded({ extended: true })); // Para leer formularios
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-// Servir archivos estáticos (para las imágenes que se suban)
+// Archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
-// Rutas de la API
+// Rutas
 app.use('/api/auth', authRoutes);
 app.use('/api/denuncias', denunciaRoutes);
 
-// Ruta de prueba
+// Health check / prueba
 app.get('/', (req, res) => {
-    res.send('✅ Backend del Sistema de Denuncias está funcionando.');
+  res.send('✅ Backend del Sistema de Denuncias está funcionando.');
 });
 
-// Iniciar el servidor
-app.listen(PORT, () => {
-    console.log(`🚀 Servidor backend corriendo en http://localhost:${PORT}`);
+// 🚨 CAMBIO CLAVE AQUÍ
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Servidor backend corriendo en puerto ${PORT}`);
 });
