@@ -63,15 +63,25 @@ git push -u origin main
 En el servicio de tu aplicación (no en la base de datos):
 
 1. Ve a la pestaña "Variables"
-2. Agrega las siguientes variables:
+2. **IMPORTANTE:** Conecta las variables de MySQL haciendo clic en "+ Variable" → "Add Reference"
+3. Agrega las siguientes referencias al servicio MySQL:
+
+```
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_USER=${{MySQL.MYSQLUSER}}
+DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+DB_NAME=${{MySQL.MYSQLDATABASE}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+```
+
+4. Luego agrega estas variables adicionales:
 
 ```
 NODE_ENV=production
 JWT_SECRET=tu_secret_key_super_segura_aqui
-PORT=3001
 ```
 
-**Nota:** Las variables de MySQL ya están disponibles automáticamente desde el servicio de base de datos.
+**Nota:** Railway nombra el servicio MySQL como "MySQL" por defecto. Si le pusiste otro nombre, usa ese nombre en las referencias (ej: `${{MiBaseDatos.MYSQLHOST}}`).
 
 ### 5️⃣ Configurar la Base de Datos
 
@@ -110,10 +120,16 @@ git push
 
 ---
 
-## 🔍 Verificar el Despliegue
+## 🔍 Verificar el Despliegue / ECONNREFUSED / host: undefined
+**Causa:** Las variables de entorno de MySQL no están conectadas.
 
-1. Railway te dará una URL pública (algo como: `tu-app.railway.app`)
-2. Prueba el endpoint: `https://tu-app.railway.app/`
+**Solución:**
+1. Ve a tu servicio de aplicación en Railway
+2. Pestaña "Variables" → "+ Variable" → "Add Reference"
+3. Selecciona el servicio MySQL
+4. Agrega las referencias: `DB_HOST=${{MySQL.MYSQLHOST}}`, etc.
+5. Espera a que redespliegue automáticamente
+6. Verifica los logs - deberías ver: "✅ Conectado exitosamente a la base de datos MySQL."s://tu-app.railway.app/`
 3. Deberías ver: "✅ Backend del Sistema de Denuncias está funcionando."
 
 ---
