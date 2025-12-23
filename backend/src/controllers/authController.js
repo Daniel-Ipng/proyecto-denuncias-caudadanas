@@ -31,15 +31,41 @@ exports.registrarUsuario = async (req, res) => {
 // --- Iniciar Sesión ---
 exports.iniciarSesion = (req, res) => {
     const { email, password } = req.body;
+    
+    if (!email || !password) {
+        return res.status(400).json({ message: 'Email y contraseña son requeridos' });
+    }
+    
     const query = 'SELECT * FROM usuarios WHERE email = ?';
+    
     db.query(query, [email], async (err, results) => {
-        if (err) return res.status(500).json({ message: 'Error del servidor' });
-        if (results.length === 0) return res.status(401).json({ message: 'Credenciales inválidas' });
+        if (err) {
+            console.error('Error de base de datos:', err);
+            return res.status(500).json({ message: 'Error del servidor' });
+        }
+        
+        if (results.length === 0) {
+            return res.status(401).json({ message: 'Credenciales inválidas' });
+        }
+        
         const usuario = results[0];
         const esValida = await bcrypt.compare(password, usuario.password_hash);
-        if (!esValida) return res.status(401).json({ message: 'Credenciales inválidas' });
+        
+        if (!esValida) {
+            return res.status(401).json({ message: 'Credenciales inválidas' });
+        }
+        
         const token = jwt.sign({ id: usuario.id, rol: usuario.rol }, process.env.JWT_SECRET, { expiresIn: '1h' });
-        res.json({ message: 'Login OK', token, rol: usuario.rol, usuario: { id: usuario.id, nombre: usuario.nombre } });
+        
+        res.json({ 
+            message: 'Login OK', 
+            token, 
+            rol: usuario.rol, 
+            usuario: { 
+                id: usuario.id, 
+                nombre: usuario.nombre 
+            } 
+        });
     });
 };
 

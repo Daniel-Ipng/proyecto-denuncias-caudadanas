@@ -4,7 +4,8 @@
   "description": "Sistema de denuncias ciudadanas",
   "scripts": {
     "start": "cd backend && npm start",
-    "install": "cd backend && npm install"
+    "dev": "cd backend && npm run dev",
+    "install-all": "cd backend && npm install"
   },
   "keywords": [],
   "author": "",

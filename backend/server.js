@@ -20,15 +20,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Archivos estáticos
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Rutas
+// Rutas API
 app.use('/api/auth', authRoutes);
 app.use('/api/denuncias', denunciaRoutes);
-
-// Test
-app.get('/', (req, res) => {
-    res.send('✅ Backend del Sistema de Denuncias está funcionando.');
-});
 
 // Start
 app.listen(PORT, '0.0.0.0', () => {

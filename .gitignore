@@ -19,7 +19,11 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Uploads (opcional, dependiendo si quieres subir las imágenes)
+# Base de datos y scripts SQL (no subir a repositorio)
+base de datos.txt
+*.sql
+
+# Uploads - imágenes subidas por usuarios (no subir a repositorio)
 backend/public/uploads/*
 !backend/public/uploads/.gitkeep
 
