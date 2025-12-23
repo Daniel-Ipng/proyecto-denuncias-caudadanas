@@ -148,7 +148,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const detailImage = document.getElementById('detailImage');
         const noImage = document.getElementById('noImage');
         if (denuncia.foto_url) {
-            detailImage.src = `${window.location.origin}${denuncia.foto_url}`;
+            detailImage.src = denuncia.foto_url.startsWith('http') 
+                ? denuncia.foto_url 
+                : `${window.location.origin}${denuncia.foto_url}`;
             detailImage.style.display = 'block';
             noImage.style.display = 'none';
         } else {

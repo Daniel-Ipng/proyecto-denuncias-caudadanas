@@ -40,7 +40,8 @@ exports.obtenerDenunciasUsuario = (req, res) => {
         SELECT 
             d.id, d.folio, d.titulo, d.descripcion, d.estado, d.fecha_creacion,
             d.latitud, d.longitud, d.fecha_actualizacion,
-            c.nombre AS categoria
+            c.nombre AS categoria,
+            (SELECT url_imagen FROM imagenes_denuncia WHERE id_denuncia = d.id LIMIT 1) AS imagen_url
         FROM denuncias d
         JOIN categorias c ON d.id_categoria = c.id
         WHERE d.id_usuario = ?
@@ -63,7 +64,8 @@ exports.obtenerTodasDenuncias = (req, res) => {
             d.id, d.folio, d.titulo, d.descripcion, d.estado, d.fecha_creacion,
             d.latitud, d.longitud, d.fecha_actualizacion,
             c.nombre AS categoria, c.id AS id_categoria,
-            u.nombre, u.apellido
+            u.nombre, u.apellido,
+            (SELECT url_imagen FROM imagenes_denuncia WHERE id_denuncia = d.id LIMIT 1) AS foto_url
         FROM denuncias d
         JOIN categorias c ON d.id_categoria = c.id
         JOIN usuarios u ON d.id_usuario = u.id
@@ -220,7 +222,7 @@ exports.obtenerDetalleDenuncia = (req, res) => {
         const denuncia = results[0];
         // Si hay múltiples imágenes, tomar la primera
         if (denuncia.imagen_url) {
-            denuncia.imagen_url = `http://localhost:3001${denuncia.imagen_url.split(',')[0]}`;
+            denuncia.imagen_url = denuncia.imagen_url.split(',')[0];
         }
         
         res.json(denuncia);

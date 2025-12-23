@@ -182,7 +182,9 @@ function populateModal() {
     const noImagePlaceholder = document.getElementById('noImagePlaceholder');
 
     if (d.imagen_url) {
-        imgElement.src = d.imagen_url;
+        imgElement.src = d.imagen_url.startsWith('http') 
+            ? d.imagen_url 
+            : `${window.location.origin}${d.imagen_url}`;
         imgElement.style.display = 'block';
         noImagePlaceholder.style.display = 'none';
     } else {

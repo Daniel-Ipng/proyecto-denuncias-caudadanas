@@ -193,7 +193,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
 
             if (detalle.imagen_url) {
-                detailImage.src = detalle.imagen_url;
+                detailImage.src = detalle.imagen_url.startsWith('http') 
+                    ? detalle.imagen_url 
+                    : `${window.location.origin}${detalle.imagen_url}`;
                 detailImage.style.display = 'block';
                 noImage.style.display = 'none';
             } else {
