@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const apiCall = async (endpoint) => {
         const token = getToken();
         if (!token) { logout(); return; }
-        const response = await fetch(`http://localhost:3001/api/denuncias${endpoint}`, {
+        const response = await fetch(`${window.location.origin}/api/denuncias${endpoint}`, {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) {
@@ -230,7 +230,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 sendCommentBtn.textContent = 'Enviando...';
                 try {
                     const token = getToken();
-                    const res = await fetch(`http://localhost:3001/api/denuncias/${id}/comentarios`, {
+                    const res = await fetch(`${window.location.origin}/api/denuncias/${id}/comentarios`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                         body: JSON.stringify({ texto })

@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         };
 
-        const response = await fetch(`http://localhost:3001/api/denuncias${endpoint}`, options);
+        const response = await fetch(`${window.location.origin}/api/denuncias${endpoint}`, options);
         
         if (!response.ok) {
             const errorData = await response.json();

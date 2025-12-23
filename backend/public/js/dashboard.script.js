@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const apiCall = async (endpoint) => {
         const token = getToken();
         if (!token) { logout(); return; }
-        const response = await fetch(`http://localhost:3001/api/denuncias${endpoint}`, {
+        const response = await fetch(`${window.location.origin}/api/denuncias${endpoint}`, {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) {
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const detailImage = document.getElementById('detailImage');
         const noImage = document.getElementById('noImage');
         if (denuncia.foto_url) {
-            detailImage.src = `http://localhost:3001${denuncia.foto_url}`;
+            detailImage.src = `${window.location.origin}${denuncia.foto_url}`;
             detailImage.style.display = 'block';
             noImage.style.display = 'none';
         } else {
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Obtener comentarios
         const commentsList = document.getElementById('commentsList');
         try {
-            const response = await fetch(`http://localhost:3001/api/denuncias/${denuncia.id}/comentarios`, {
+            const response = await fetch(`${window.location.origin}/api/denuncias/${denuncia.id}/comentarios`, {
                 headers: {
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 }

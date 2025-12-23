@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const apiCall = async (endpoint) => {
         const token = getToken();
         if (!token) { logout(); return; }
-        const response = await fetch(`http://localhost:3001/api/denuncias${endpoint}`, {
+        const response = await fetch(`${window.location.origin}/api/denuncias${endpoint}`, {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
         });
         if (!response.ok) {

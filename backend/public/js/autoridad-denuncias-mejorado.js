@@ -35,7 +35,7 @@ function verifyAuthority() {
 async function loadDenuncias() {
     try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3001/api/denuncias/todas', {
+        const response = await fetch(`${window.location.origin}/api/denuncias/todas`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -119,7 +119,7 @@ async function openDenunciaDetail(denunciaId) {
         const token = localStorage.getItem('token');
 
         // Obtener datos detallados de la denuncia
-        const response = await fetch(`http://localhost:3001/api/denuncias/${denunciaId}`, {
+        const response = await fetch(`${window.location.origin}/api/denuncias/${denunciaId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -131,7 +131,7 @@ async function openDenunciaDetail(denunciaId) {
         currentRating = 0;
 
         // Obtener comentarios
-        const commentsResponse = await fetch(`http://localhost:3001/api/denuncias/${denunciaId}/comentarios`, {
+        const commentsResponse = await fetch(`${window.location.origin}/api/denuncias/${denunciaId}/comentarios`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -291,7 +291,7 @@ sendCommentBtn.addEventListener('click', async function () {
         this.textContent = 'Enviando...';
 
         const token = localStorage.getItem('token');
-        const response = await fetch(`http://localhost:3001/api/denuncias/${currentDenuncia.id}/comentarios`, {
+        const response = await fetch(`${window.location.origin}/api/denuncias/${currentDenuncia.id}/comentarios`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -339,7 +339,7 @@ saveChangesBtn.addEventListener('click', async function () {
             updateData.calificacion = currentRating;
         }
 
-        const response = await fetch(`http://localhost:3001/api/denuncias/${currentDenuncia.id}`, {
+        const response = await fetch(`${window.location.origin}/api/denuncias/${currentDenuncia.id}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
