@@ -90,9 +90,10 @@ exports.crearDenuncia = (req, res) => {
     }
 
     // Llamar al procedimiento almacenado para crear denuncia
+    // Orden: folio, titulo, descripcion, latitud, longitud, id_usuario, id_categoria
     db.query(
         'CALL sp_crear_denuncia(?, ?, ?, ?, ?, ?, ?)',
-        [folio, titulo, descripcion, id_categoria, latitud, longitud, userId],
+        [folio, titulo, descripcion, latitud, longitud, userId, id_categoria],
         (err, results) => {
             if (err) {
                 console.error('Error al ejecutar sp_crear_denuncia:', err);
@@ -108,7 +109,7 @@ exports.crearDenuncia = (req, res) => {
             }
 
             // El procedimiento devuelve el ID en el primer result set
-            const denunciaId = results[0][0].id_denuncia;
+            const denunciaId = results[0][0].insertId;
 
             // Si hay imagen, insertarla usando el procedimiento almacenado
             if (imagenUrl) {
