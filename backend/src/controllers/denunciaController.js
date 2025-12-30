@@ -2,6 +2,14 @@ const db = require('../config/db');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
+
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
 
 // Configurar almacenamiento de imágenes
 const storage = multer.diskStorage({
@@ -72,46 +80,39 @@ exports.obtenerCategorias = (req, res) => {
 };
 
 // Crear nueva denuncia
-exports.crearDenuncia = (req, res) => {
+exports.crearDenuncia = async (req, res) => {
     const userId = req.user.id;
     const { folio, titulo, descripcion, id_categoria, latitud, longitud } = req.body;
 
-    // Validaciones básicas
     if (!folio || !titulo || !descripcion || !id_categoria || !latitud || !longitud) {
         return res.status(400).json({ 
             message: 'Todos los campos son requeridos: folio, titulo, descripcion, id_categoria, latitud, longitud' 
         });
     }
 
-    // Ruta de la imagen si existe
     let imagenUrl = null;
     if (req.file) {
-        imagenUrl = `/uploads/${req.file.filename}`;
+        try {
+            // Subir imagen a Cloudinary
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: 'denuncias_ciudadanas'
+            });
+            imagenUrl = result.secure_url;
+            // Eliminar imagen local después de subir
+            fs.unlink(req.file.path, () => {});
+        } catch (err) {
+            return res.status(500).json({ message: 'Error al subir imagen a Cloudinary.' });
+        }
     }
 
-    // Llamar al procedimiento almacenado para crear denuncia
-    // Orden: folio, titulo, descripcion, latitud, longitud, id_usuario, id_categoria
     db.query(
         'CALL sp_crear_denuncia(?, ?, ?, ?, ?, ?, ?)',
         [folio, titulo, descripcion, latitud, longitud, userId, id_categoria],
         (err, results) => {
             if (err) {
-                console.error('Error al ejecutar sp_crear_denuncia:', err);
-                
-                // Si hay error y se subió imagen, eliminarla
-                if (req.file) {
-                    fs.unlink(req.file.path, (unlinkErr) => {
-                        if (unlinkErr) console.error('Error al eliminar imagen:', unlinkErr);
-                    });
-                }
-                
                 return res.status(500).json({ message: 'Error del servidor al crear la denuncia.' });
             }
-
-            // El procedimiento devuelve el ID en el primer result set
             const denunciaId = results[0][0].insertId;
-
-            // Si hay imagen, insertarla usando el procedimiento almacenado
             if (imagenUrl) {
                 db.query('CALL sp_insertar_imagen_denuncia(?, ?)', [imagenUrl, denunciaId], (err) => {
                     if (err) {
