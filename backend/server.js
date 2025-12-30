@@ -9,6 +9,7 @@ if (process.env.NODE_ENV !== 'production') {
 // Importar rutas
 const authRoutes = require('./src/routes/auth');
 const denunciaRoutes = require('./src/routes/denuncias');
+const usuarioRoutes = require('./src/routes/usuarios');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,6 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // Rutas API
 app.use('/api/auth', authRoutes);
 app.use('/api/denuncias', denunciaRoutes);
+app.use('/api/usuarios', usuarioRoutes);
 
 // Start
 app.listen(PORT, '0.0.0.0', () => {

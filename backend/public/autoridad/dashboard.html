@@ -8,23 +8,35 @@
     <link rel="stylesheet" href="../css/dashboard-style.css">
     <style>
         :root {
-            --primary-color: #b6c449;
-            --primary-dark: #44975e;
-            --primary-light: #FF6B6B;
-            --accent-color: #FF8C00;
+            --azul-oscuro: #0f172a;
+            --azul-primario: #2563eb;
+            --primary-color: #2563eb;
+            --primary-dark: #0f172a;
+            --primary-light: #60a5fa;
+            --accent-color: #3b82f6;
         }
 
         .sidebar {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
         }
 
+        .sidebar .logo {
+            color: white;
+        }
+
+        .sidebar .nav-item {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
         .nav-item.active {
-            background: rgba(20, 3, 3, 0);
+            background: rgba(255, 255, 255, 0.15);
             border-left: 4px solid var(--accent-color);
+            color: white;
         }
 
         .nav-item:hover {
             background: rgba(255, 255, 255, 0.1);
+            color: white;
         }
 
         .stat-card {
@@ -102,21 +114,34 @@
             </a>
             <a href="reportes.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path>
-                    <path d="M16 3h5v5"></path>
-                    <path d="M9.5 15.5L21 4"></path>
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
                 </svg>
                 <span>Reportes</span>
             </a>
-
+            <a href="usuarios.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Usuarios</span>
+            </a>
+            <a href="notificaciones.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span>Notificaciones</span>
+            </a>
             <a href="configuracion.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path
-                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1-2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2-2v.09A1.65 1.65 0 0 0 1.51 1z">
-                    </path>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>Configuración</span>
+                <span>Mi Perfil</span>
             </a>
         </nav>
 
@@ -141,13 +166,6 @@
                 <p>Panel de Control - <span id="user-name">Autoridad</span></p>
             </div>
             <div class="header-right">
-                <button class="icon-btn" id="notificationBtn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                    </svg>
-                    <span class="badge" id="notification-badge">3</span>
-                </button>
                 <div class="profile-menu">
                     <div class="profile-avatar" id="profile-avatar">AU</div>
                     <div class="profile-dropdown">

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mis Denuncias - Reporte Urbano</title>
-    <link rel="stylesheet" href="css/mis-denuncias-style.css">
+    <link rel="stylesheet" href="../css/mis-denuncias-style.css">
     <style>
         /* Modal básico para detalle */
         .modal-overlay{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);z-index:1200}
@@ -42,7 +42,7 @@
             <span>Reporte Urbano</span>
         </div>
         <nav class="sidebar-nav">
-            <a href="ciudadano/dashboard.html" class="nav-item">
+            <a href="dashboard.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                 <span>Dashboard</span>
             </a>
@@ -50,26 +50,26 @@
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
                 <span>Mis Denuncias</span>
             </a>
-            <a href="ciudadano/nueva-denuncia.html" class="nav-item">
+            <a href="nueva-denuncia.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 5v14M5 12h14"></path>
                 </svg>
                 <span>Nueva Denuncia</span>
             </a>
-            <a href="ciudadano/mapa.html" class="nav-item">
+            <a href="mapa.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
                 <span>Mapa</span>
             </a>
-            <a href="ciudadano/reporte.html" class="nav-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path><path d="M16 3h5v5"></path><path d="M9.5 15.5L21 4"></path></svg>
-                <span>Reportes</span>
+            <a href="notificaciones.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                <span>Notificaciones</span>
             </a>
             <a href="configuracion.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="3"></circle>
-                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                <span>Configuración</span>
+                <span>Mi Perfil</span>
             </a>
         </nav>
         <div class="sidebar-footer">
@@ -89,14 +89,10 @@
                 <p>Gestiona y revisa todas tus denuncias</p>
             </div>
             <div class="header-right">
-                <button class="icon-btn" id="notificationBtn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                    <span class="badge">3</span>
-                </button>
                 <div class="profile-menu">
                     <div class="profile-avatar" id="profile-avatar">US</div>
                     <div class="profile-dropdown">
-                        <a href="ciudadano/configuracion.html">Mi Perfil</a>
+                        <a href="configuracion.html">Mi Perfil</a>
                         <a href="#" id="logout-btn-dropdown">Cerrar Sesión</a>
                     </div>
                 </div>
@@ -114,8 +110,9 @@
                 <button class="filter-btn" data-filter="recibido">Pendientes <span class="count" id="count-pending">0</span></button>
                 <button class="filter-btn" data-filter="en_progreso">En Proceso <span class="count" id="count-progress">0</span></button>
                 <button class="filter-btn" data-filter="resuelto">Resueltas <span class="count" id="count-resolved">0</span></button>
+                <button class="filter-btn" data-filter="rechazado">Rechazadas <span class="count" id="count-rejected">0</span></button>
             </div>
-            <a href="ciudadano/nueva-denuncia.html" class="btn-new-report">
+            <a href="nueva-denuncia.html" class="btn-new-report">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 Nueva Denuncia
             </a>
@@ -131,7 +128,7 @@
             <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
             <h3>No se encontraron denuncias</h3>
             <p>Intenta cambiar los filtros o crear una nueva denuncia</p>
-            <button class="btn-new-report" onclick="window.location.href='ciudadano/nueva-denuncia.html'">Nueva Denuncia</button>
+            <button class="btn-new-report" onclick="window.location.href='nueva-denuncia.html'">Nueva Denuncia</button>
         </div>
     </main>
 
@@ -193,8 +190,8 @@
         </div>
     </div>
 
-    <script src="js/user-profile.js"></script>
-    <script src="js/dashboard-nav.js"></script>
-    <script src="js/mis-denuncias.script.js"></script>
+    <script src="../js/user-profile.js"></script>
+    <script src="../js/dashboard-nav.js"></script>
+    <script src="../js/mis-denuncias.script.js"></script>
 </body>
 </html>

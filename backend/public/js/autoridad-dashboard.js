@@ -119,25 +119,26 @@ document.addEventListener('DOMContentLoaded', async () => {
             const estadoInfo = getEstadoInfo(report.estado);
             const ciudadano = `${report.nombre} ${report.apellido}`;
             return `
-                <div class="report-card">
-                    <div class="report-header">
-                        <span class="status-badge ${estadoInfo.class}">${estadoInfo.text}</span>
-                        <span class="report-id">#${report.folio}</span>
+                <div class="denuncia-card" data-id="${report.id}" data-status="${report.estado}">
+                    <div class="card-header">
+                        <div class="card-status">
+                            <span class="status-badge ${estadoInfo.class}">${estadoInfo.text}</span>
+                            <span class="card-id">#${report.folio}</span>
+                        </div>
+                        <span class="card-date">${getDaysAgo(report.fecha_creacion)}</span>
                     </div>
-                    <h3 class="report-title">${report.titulo}</h3>
-                    <p class="report-description">${report.descripcion}</p>
-                    <div style="margin: 0.5rem 0; font-size: 0.85rem; color: #666;">
-                        <strong>Reportado por:</strong> ${ciudadano}
+                    <h3 class="card-title">${report.titulo}</h3>
+                    <p class="card-description">${report.descripcion}</p>
+                    <div class="card-location">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                        <span>Reportado por: ${ciudadano}</span>
                     </div>
-                    <div class="report-footer">
-                        <div class="report-location">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                                <circle cx="12" cy="10" r="3"></circle>
-                            </svg>
+                    <div class="card-footer">
+                        <div class="card-category">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
                             <span>${report.categoria}</span>
                         </div>
-                        <button class="btn-view" onclick="window.location.href='denuncias.html'">Atender</button>
+                        <button class="btn-view-details" onclick="window.location.href='denuncias.html'">Ver detalles →</button>
                     </div>
                 </div>
             `;

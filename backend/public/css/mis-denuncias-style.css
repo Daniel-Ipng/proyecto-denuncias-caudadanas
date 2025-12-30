@@ -452,6 +452,11 @@ body {
     color: #22c55e;
 }
 
+.status-badge.rejected {
+    background: #fef2f2;
+    color: #ef4444;
+}
+
 .card-id {
     font-size: 11px;
     color: #9ca3af;

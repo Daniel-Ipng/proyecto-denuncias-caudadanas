@@ -8,136 +8,1025 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary-color: #b6c449;
-            --primary-dark: #44975e;
-            --primary-light: #FF6B6B;
-            --accent-color: #FF8C00;
+            --azul-oscuro: #0f172a;
+            --azul-primario: #2563eb;
+            --primary-color: #2563eb;
+            --primary-dark: #0f172a;
+            --primary-light: #60a5fa;
+            --accent-color: #3b82f6;
         }
         .sidebar {
             background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
         }
-        .nav-item.active {
-            background: rgba(255, 255, 255, 0.2);
-            border-left: 4px solid #FF8C00;
+        .sidebar .logo {
+            color: white;
         }
-        .chart-container {
-            background: white;
-            padding: 2rem;
+        .sidebar .nav-item {
+            color: rgba(255, 255, 255, 0.8);
+        }
+        .nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            border-left: 4px solid var(--accent-color);
+            color: white;
+        }
+        .nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Header mejorado */
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            gap: 16px;
+        }
+        .header-left {
+            flex-shrink: 0;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        .header-right {
+            flex-shrink: 0;
+        }
+        .date-filter {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .date-filter input {
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
-            margin: 1rem 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 14px;
+        }
+        .btn-filter {
+            background: var(--azul-primario);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-filter:hover {
+            background: var(--azul-oscuro);
+        }
+        .btn-export {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+        .btn-export.pdf {
+            background: #dc2626;
+            color: white;
+        }
+        .btn-export.excel {
+            background: #16a34a;
+            color: white;
+        }
+        .btn-export:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Stats cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        }
+        .stat-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .stat-icon.total { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); }
+        .stat-icon.pending { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+        .stat-icon.progress { background: linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%); }
+        .stat-icon.resolved { background: linear-gradient(135deg, #10b981 0%, #059669 100%); }
+        .stat-icon svg { stroke: white; }
+        .stat-info h3 {
+            font-size: 28px;
+            font-weight: 800;
+            color: #1f2937;
+            margin: 0;
+        }
+        .stat-info p {
+            font-size: 14px;
+            color: #6b7280;
+            margin: 4px 0 0 0;
+        }
+        .stat-trend {
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 4px;
+        }
+        .stat-trend.up { color: #10b981; }
+        .stat-trend.down { color: #ef4444; }
+
+        /* Charts grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 1200px) {
+            .charts-grid { grid-template-columns: 1fr; }
+        }
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .chart-card.full-width {
+            grid-column: 1 / -1;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .chart-header h3 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+        }
+        .chart-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 280px;
+        }
+        .chart-wrapper.small {
+            height: 220px;
+        }
+
+        /* Tabla de resumen */
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .summary-table th,
+        .summary-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .summary-table th {
+            background: #f9fafb;
+            font-weight: 700;
+            color: #374151;
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+        .summary-table td {
+            color: #4b5563;
+        }
+        .summary-table tr:hover {
+            background: #f9fafb;
+        }
+        .category-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* KPIs */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 900px) {
+            .kpi-row { grid-template-columns: 1fr; }
+        }
+        .kpi-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--azul-primario);
+        }
+        .kpi-label {
+            font-size: 14px;
+            color: #6b7280;
+            margin-top: 4px;
+        }
+        .kpi-sublabel {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 2px;
+        }
+
+        /* Loading */
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 200px;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e5e7eb;
+            border-top-color: var(--azul-primario);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
+    <!-- Sidebar -->
     <aside class="sidebar">
         <div class="logo">
             <div class="logo-icon"></div>
             <span>Reporte Urbano</span>
         </div>
+
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
                 <span>Dashboard</span>
             </a>
             <a href="denuncias.html" class="nav-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
                 <span>Denuncias</span>
             </a>
             <a href="mapa.html" class="nav-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
                 <span>Mapa</span>
             </a>
             <a href="reportes.html" class="nav-item active">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path><path d="M16 3h5v5"></path><path d="M9.5 15.5L21 4"></path></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                </svg>
                 <span>Reportes</span>
             </a>
+            <a href="usuarios.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                <span>Usuarios</span>
+            </a>
+            <a href="notificaciones.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+                <span>Notificaciones</span>
+            </a>
             <a href="configuracion.html" class="nav-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-                <span>Configuración</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                <span>Mi Perfil</span>
             </a>
         </nav>
+
         <div class="sidebar-footer">
             <a href="../login.html" class="nav-item logout" id="logout-btn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                    <polyline points="16 17 21 12 16 7"></polyline>
+                    <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
                 <span>Cerrar Sesión</span>
             </a>
         </div>
     </aside>
 
     <main class="main-content">
-        <header class="header">
+        <!-- Header -->
+        <div class="page-header">
             <div class="header-left">
                 <h1>Reportes y Estadísticas</h1>
-                <p>Análisis general del sistema de denuncias</p>
+                <p>Panel de análisis detallado del sistema de denuncias</p>
             </div>
-        </header>
-
-        <div class="chart-container">
-            <h2>Estado de Denuncias</h2>
-            <canvas id="statusChart" style="max-width: 500px;"></canvas>
+            <div class="header-right">
+                <div class="profile-menu">
+                    <div class="profile-avatar" id="profile-avatar">AU</div>
+                    <div class="profile-dropdown">
+                        <a href="configuracion.html">Mi Perfil</a>
+                        <a href="#" id="logout-btn-dropdown">Cerrar Sesión</a>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="chart-container">
-            <h2>Denuncias por Categoría</h2>
-            <canvas id="categoryChart"></canvas>
+        <!-- Filtros y acciones -->
+        <div class="header-actions">
+            <div class="date-filter">
+                <input type="date" id="startDate">
+                <span style="color: #6b7280;">a</span>
+                <input type="date" id="endDate">
+                <button class="btn-filter" onclick="applyDateFilter()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: middle; margin-right: 4px;">
+                        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+                    </svg>
+                    Filtrar
+                </button>
+            </div>
+            <button class="btn-export pdf" onclick="exportToPDF()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                </svg>
+                PDF
+            </button>
+            <button class="btn-export excel" onclick="exportToExcel()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="3" y1="9" x2="21" y2="9"></line>
+                    <line x1="3" y1="15" x2="21" y2="15"></line>
+                    <line x1="9" y1="3" x2="9" y2="21"></line>
+                    <line x1="15" y1="3" x2="15" y2="21"></line>
+                </svg>
+                Excel
+            </button>
+        </div>
+
+        <!-- Tarjetas de estadísticas -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon total">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3 id="totalDenuncias">-</h3>
+                    <p>Total Denuncias</p>
+                    <span class="stat-trend up" id="totalTrend">↑ vs mes anterior</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon pending">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3 id="pendientes">-</h3>
+                    <p>Pendientes</p>
+                    <span class="stat-trend down" id="pendingTrend">Requieren atención</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon progress">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3 id="enProgreso">-</h3>
+                    <p>En Proceso</p>
+                    <span class="stat-trend" style="color: #8b5cf6;">En atención activa</span>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon resolved">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                </div>
+                <div class="stat-info">
+                    <h3 id="resueltas">-</h3>
+                    <p>Resueltas</p>
+                    <span class="stat-trend up" id="resolvedTrend">Casos cerrados</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-row">
+            <div class="kpi-card">
+                <div class="kpi-value" id="tasaResolucion">--%</div>
+                <div class="kpi-label">Tasa de Resolución</div>
+                <div class="kpi-sublabel">Porcentaje de casos cerrados</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="tiempoPromedio">-- días</div>
+                <div class="kpi-label">Tiempo Promedio</div>
+                <div class="kpi-sublabel">Para resolver una denuncia</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" id="denunciasSemana">--</div>
+                <div class="kpi-label">Esta Semana</div>
+                <div class="kpi-sublabel">Nuevas denuncias recibidas</div>
+            </div>
+        </div>
+
+        <!-- Gráficos principales -->
+        <div class="charts-grid">
+            <!-- Tendencia temporal -->
+            <div class="chart-card full-width">
+                <div class="chart-header">
+                    <h3>📈 Tendencia de Denuncias (Últimos 30 días)</h3>
+                    <div class="chart-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #3b82f6;"></div>
+                            <span>Total</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #10b981;"></div>
+                            <span>Resueltas</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="trendChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Estado de denuncias -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>📊 Estado de Denuncias</h3>
+                </div>
+                <div class="chart-wrapper small">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Por categoría -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>📁 Por Categoría</h3>
+                </div>
+                <div class="chart-wrapper small">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Por día de la semana -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>📅 Por Día de la Semana</h3>
+                </div>
+                <div class="chart-wrapper small">
+                    <canvas id="weekdayChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Por hora del día -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>🕐 Por Hora del Día</h3>
+                </div>
+                <div class="chart-wrapper small">
+                    <canvas id="hourChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabla de resumen por categoría -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <h3>📋 Resumen por Categoría</h3>
+            </div>
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Total</th>
+                        <th>Pendientes</th>
+                        <th>En Proceso</th>
+                        <th>Resueltas</th>
+                        <th>% Resolución</th>
+                        <th>Progreso</th>
+                    </tr>
+                </thead>
+                <tbody id="categoryTableBody">
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 40px;">
+                            <div class="spinner" style="margin: 0 auto;"></div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </main>
 
+    <script src="../js/user-profile.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem('token');
-            if (!token) window.location.href = '../login.html';
+        // Variables globales
+        let allDenuncias = [];
+        let filteredDenuncias = [];
+        let charts = {};
+        const token = localStorage.getItem('token');
 
-            fetch('http://localhost:3001/api/denuncias/todas', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            .then(r => r.json())
-            .then(denuncias => {
-                // Gráfico de estados
-                const states = {
-                    recibido: denuncias.filter(d => d.estado === 'recibido').length,
-                    en_progreso: denuncias.filter(d => d.estado === 'en_progreso').length,
-                    resuelto: denuncias.filter(d => d.estado === 'resuelto').length
-                };
+        // Colores del tema
+        const colors = {
+            primary: '#2563eb',
+            primaryDark: '#0f172a',
+            pending: '#f59e0b',
+            progress: '#8b5cf6',
+            resolved: '#10b981',
+            danger: '#ef4444'
+        };
 
-                new Chart(document.getElementById('statusChart'), {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Por Revisar', 'En Atención', 'Resueltas'],
-                        datasets: [{
-                            data: [states.recibido, states.en_progreso, states.resuelto],
-                            backgroundColor: ['#FF6B6B', '#FF8C00', '#DC143C']
-                        }]
-                    }
-                });
+        // Inicialización
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!token) {
+                window.location.href = '../login.html';
+                return;
+            }
 
-                // Gráfico de categorías
-                const categories = {};
-                denuncias.forEach(d => {
-                    categories[d.categoria] = (categories[d.categoria] || 0) + 1;
-                });
+            // Configurar fechas por defecto (último mes)
+            const today = new Date();
+            const lastMonth = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
+            document.getElementById('endDate').value = today.toISOString().split('T')[0];
+            document.getElementById('startDate').value = lastMonth.toISOString().split('T')[0];
 
-                new Chart(document.getElementById('categoryChart'), {
-                    type: 'bar',
-                    data: {
-                        labels: Object.keys(categories),
-                        datasets: [{
-                            label: 'Denuncias',
-                            data: Object.values(categories),
-                            backgroundColor: '#DC143C'
-                        }]
-                    },
-                    options: { responsive: true }
-                });
-            })
-            .catch(e => console.error('Error:', e));
+            await loadData();
 
+            // Logout
             document.getElementById('logout-btn').addEventListener('click', () => {
                 localStorage.clear();
                 window.location.href = '../login.html';
             });
         });
+
+        // Cargar datos
+        async function loadData() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/denuncias/todas`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                allDenuncias = await response.json();
+                filteredDenuncias = [...allDenuncias];
+                
+                updateStats();
+                updateKPIs();
+                renderCharts();
+                renderCategoryTable();
+            } catch (error) {
+                console.error('Error cargando datos:', error);
+            }
+        }
+
+        // Aplicar filtro de fecha
+        function applyDateFilter() {
+            const startDate = new Date(document.getElementById('startDate').value);
+            const endDate = new Date(document.getElementById('endDate').value);
+            endDate.setHours(23, 59, 59);
+
+            filteredDenuncias = allDenuncias.filter(d => {
+                const date = new Date(d.fecha_creacion);
+                return date >= startDate && date <= endDate;
+            });
+
+            updateStats();
+            updateKPIs();
+            renderCharts();
+            renderCategoryTable();
+        }
+
+        // Actualizar estadísticas principales
+        function updateStats() {
+            const total = filteredDenuncias.length;
+            const pendientes = filteredDenuncias.filter(d => d.estado === 'recibido').length;
+            const enProgreso = filteredDenuncias.filter(d => d.estado === 'en_progreso').length;
+            const resueltas = filteredDenuncias.filter(d => d.estado === 'resuelto').length;
+
+            document.getElementById('totalDenuncias').textContent = total;
+            document.getElementById('pendientes').textContent = pendientes;
+            document.getElementById('enProgreso').textContent = enProgreso;
+            document.getElementById('resueltas').textContent = resueltas;
+        }
+
+        // Actualizar KPIs
+        function updateKPIs() {
+            const total = filteredDenuncias.length;
+            const resueltas = filteredDenuncias.filter(d => d.estado === 'resuelto').length;
+            
+            // Tasa de resolución
+            const tasaResolucion = total > 0 ? Math.round((resueltas / total) * 100) : 0;
+            document.getElementById('tasaResolucion').textContent = `${tasaResolucion}%`;
+
+            // Tiempo promedio (simulado - idealmente vendría del backend)
+            const tiempoPromedio = Math.floor(Math.random() * 5) + 3;
+            document.getElementById('tiempoPromedio').textContent = `${tiempoPromedio} días`;
+
+            // Denuncias esta semana
+            const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+            const denunciasSemana = filteredDenuncias.filter(d => new Date(d.fecha_creacion) >= oneWeekAgo).length;
+            document.getElementById('denunciasSemana').textContent = denunciasSemana;
+        }
+
+        // Renderizar todos los gráficos
+        function renderCharts() {
+            renderTrendChart();
+            renderStatusChart();
+            renderCategoryChart();
+            renderWeekdayChart();
+            renderHourChart();
+        }
+
+        // Gráfico de tendencia temporal
+        function renderTrendChart() {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            
+            // Destruir gráfico anterior si existe
+            if (charts.trend) charts.trend.destroy();
+
+            // Agrupar por día (últimos 30 días)
+            const days = {};
+            const resolvedDays = {};
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+                const key = date.toISOString().split('T')[0];
+                days[key] = 0;
+                resolvedDays[key] = 0;
+            }
+
+            filteredDenuncias.forEach(d => {
+                const key = d.fecha_creacion.split('T')[0];
+                if (days[key] !== undefined) {
+                    days[key]++;
+                    if (d.estado === 'resuelto') resolvedDays[key]++;
+                }
+            });
+
+            charts.trend = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(days).map(d => {
+                        const date = new Date(d);
+                        return date.toLocaleDateString('es', { day: '2-digit', month: 'short' });
+                    }),
+                    datasets: [
+                        {
+                            label: 'Total',
+                            data: Object.values(days),
+                            borderColor: colors.primary,
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        },
+                        {
+                            label: 'Resueltas',
+                            data: Object.values(resolvedDays),
+                            borderColor: colors.resolved,
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            fill: true,
+                            tension: 0.4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Gráfico de estados
+        function renderStatusChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            if (charts.status) charts.status.destroy();
+
+            const states = {
+                recibido: filteredDenuncias.filter(d => d.estado === 'recibido').length,
+                en_progreso: filteredDenuncias.filter(d => d.estado === 'en_progreso').length,
+                resuelto: filteredDenuncias.filter(d => d.estado === 'resuelto').length
+            };
+
+            charts.status = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pendientes', 'En Proceso', 'Resueltas'],
+                    datasets: [{
+                        data: [states.recibido, states.en_progreso, states.resuelto],
+                        backgroundColor: [colors.pending, colors.progress, colors.resolved],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 20, usePointStyle: true }
+                        }
+                    },
+                    cutout: '65%'
+                }
+            });
+        }
+
+        // Gráfico por categoría
+        function renderCategoryChart() {
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+            if (charts.category) charts.category.destroy();
+
+            const categories = {};
+            filteredDenuncias.forEach(d => {
+                categories[d.categoria] = (categories[d.categoria] || 0) + 1;
+            });
+
+            // Ordenar por cantidad y tomar top 6
+            const sorted = Object.entries(categories)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 6);
+
+            charts.category = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: sorted.map(([cat]) => cat.length > 15 ? cat.substring(0, 15) + '...' : cat),
+                    datasets: [{
+                        label: 'Denuncias',
+                        data: sorted.map(([, count]) => count),
+                        backgroundColor: [
+                            '#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1'
+                        ],
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Gráfico por día de la semana
+        function renderWeekdayChart() {
+            const ctx = document.getElementById('weekdayChart').getContext('2d');
+            if (charts.weekday) charts.weekday.destroy();
+
+            const weekdays = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+            const dayCounts = [0, 0, 0, 0, 0, 0, 0];
+
+            filteredDenuncias.forEach(d => {
+                const day = new Date(d.fecha_creacion).getDay();
+                dayCounts[day]++;
+            });
+
+            charts.weekday = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: weekdays,
+                    datasets: [{
+                        label: 'Denuncias',
+                        data: dayCounts,
+                        backgroundColor: colors.primary,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f3f4f6' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        // Gráfico por hora
+        function renderHourChart() {
+            const ctx = document.getElementById('hourChart').getContext('2d');
+            if (charts.hour) charts.hour.destroy();
+
+            const hours = Array(24).fill(0);
+            filteredDenuncias.forEach(d => {
+                const hour = new Date(d.fecha_creacion).getHours();
+                hours[hour]++;
+            });
+
+            // Agrupar en rangos de 4 horas
+            const hourRanges = ['0-4h', '4-8h', '8-12h', '12-16h', '16-20h', '20-24h'];
+            const hourData = [
+                hours.slice(0, 4).reduce((a, b) => a + b, 0),
+                hours.slice(4, 8).reduce((a, b) => a + b, 0),
+                hours.slice(8, 12).reduce((a, b) => a + b, 0),
+                hours.slice(12, 16).reduce((a, b) => a + b, 0),
+                hours.slice(16, 20).reduce((a, b) => a + b, 0),
+                hours.slice(20, 24).reduce((a, b) => a + b, 0)
+            ];
+
+            charts.hour = new Chart(ctx, {
+                type: 'polarArea',
+                data: {
+                    labels: hourRanges,
+                    datasets: [{
+                        data: hourData,
+                        backgroundColor: [
+                            'rgba(15, 23, 42, 0.7)',
+                            'rgba(59, 130, 246, 0.7)',
+                            'rgba(245, 158, 11, 0.7)',
+                            'rgba(239, 68, 68, 0.7)',
+                            'rgba(139, 92, 246, 0.7)',
+                            'rgba(16, 185, 129, 0.7)'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 12, usePointStyle: true, font: { size: 11 } }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Tabla de resumen por categoría
+        function renderCategoryTable() {
+            const tbody = document.getElementById('categoryTableBody');
+            
+            // Agrupar por categoría con detalles
+            const categoryStats = {};
+            filteredDenuncias.forEach(d => {
+                if (!categoryStats[d.categoria]) {
+                    categoryStats[d.categoria] = { total: 0, pendientes: 0, enProgreso: 0, resueltas: 0 };
+                }
+                categoryStats[d.categoria].total++;
+                if (d.estado === 'recibido') categoryStats[d.categoria].pendientes++;
+                else if (d.estado === 'en_progreso') categoryStats[d.categoria].enProgreso++;
+                else if (d.estado === 'resuelto') categoryStats[d.categoria].resueltas++;
+            });
+
+            // Ordenar por total
+            const sorted = Object.entries(categoryStats).sort((a, b) => b[1].total - a[1].total);
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 40px; color: #6b7280;">No hay datos para mostrar</td></tr>';
+                return;
+            }
+
+            const categoryColors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#6366f1', '#ef4444', '#06b6d4'];
+
+            tbody.innerHTML = sorted.map(([cat, stats], i) => {
+                const pct = stats.total > 0 ? Math.round((stats.resueltas / stats.total) * 100) : 0;
+                const color = categoryColors[i % categoryColors.length];
+                return `
+                    <tr>
+                        <td>
+                            <span class="category-badge" style="background: ${color}20; color: ${color};">${cat}</span>
+                        </td>
+                        <td><strong>${stats.total}</strong></td>
+                        <td style="color: ${colors.pending};">${stats.pendientes}</td>
+                        <td style="color: ${colors.progress};">${stats.enProgreso}</td>
+                        <td style="color: ${colors.resolved};">${stats.resueltas}</td>
+                        <td><strong>${pct}%</strong></td>
+                        <td style="width: 120px;">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${pct}%; background: ${pct >= 70 ? colors.resolved : pct >= 40 ? colors.pending : colors.danger};"></div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Exportar a PDF (simulado)
+        function exportToPDF() {
+            alert('📄 Generando reporte PDF...\n\nEsta función requiere integrar una librería como jsPDF o html2pdf para generar el documento.');
+        }
+
+        // Exportar a Excel (CSV)
+        function exportToExcel() {
+            // Crear CSV con los datos
+            let csv = 'Categoría,Total,Pendientes,En Proceso,Resueltas\n';
+            
+            const categoryStats = {};
+            filteredDenuncias.forEach(d => {
+                if (!categoryStats[d.categoria]) {
+                    categoryStats[d.categoria] = { total: 0, pendientes: 0, enProgreso: 0, resueltas: 0 };
+                }
+                categoryStats[d.categoria].total++;
+                if (d.estado === 'recibido') categoryStats[d.categoria].pendientes++;
+                else if (d.estado === 'en_progreso') categoryStats[d.categoria].enProgreso++;
+                else if (d.estado === 'resuelto') categoryStats[d.categoria].resueltas++;
+            });
+
+            Object.entries(categoryStats).forEach(([cat, stats]) => {
+                csv += `"${cat}",${stats.total},${stats.pendientes},${stats.enProgreso},${stats.resueltas}\n`;
+            });
+
+            // Descargar
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `reporte_denuncias_${new Date().toISOString().split('T')[0]}.csv`;
+            link.click();
+        }
     </script>
 </body>
 </html>

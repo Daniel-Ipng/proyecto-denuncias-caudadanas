@@ -22,6 +22,120 @@ document.addEventListener('DOMContentLoaded', async () => {
     let selectedLng = null;
     let selectedPhoto = null;
     let categorias = [];
+    const isGuest = !localStorage.getItem('token');
+
+    // --- Modal de registro para invitados ---
+    const createGuestModal = () => {
+        const modalHTML = `
+            <div class="guest-modal-overlay" id="guestModal" style="display: none;">
+                <div class="guest-modal">
+                    <div class="guest-modal-icon">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </div>
+                    <h2>¡Regístrate para reportar!</h2>
+                    <p>Para enviar una denuncia y hacer seguimiento, necesitas crear una cuenta gratuita.</p>
+                    <div class="guest-modal-benefits">
+                        <div class="benefit-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Recibe notificaciones del estado</span>
+                        </div>
+                        <div class="benefit-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Comunícate con las autoridades</span>
+                        </div>
+                        <div class="benefit-item">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            <span>Historial de todos tus reportes</span>
+                        </div>
+                    </div>
+                    <div class="guest-modal-buttons">
+                        <a href="../registro.html" class="btn-register">Crear Cuenta Gratis</a>
+                        <a href="../login.html" class="btn-login-alt">Ya tengo cuenta</a>
+                    </div>
+                    <button class="guest-modal-close" onclick="closeGuestModal()">×</button>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+        // Agregar estilos del modal
+        const styles = `
+            <style>
+                .guest-modal-overlay {
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0, 0, 0, 0.6);
+                    backdrop-filter: blur(4px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 9999;
+                }
+                .guest-modal {
+                    background: white;
+                    border-radius: 16px;
+                    padding: 40px;
+                    max-width: 420px;
+                    width: 90%;
+                    text-align: center;
+                    position: relative;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                    animation: modalSlideIn 0.3s ease;
+                }
+                @keyframes modalSlideIn {
+                    from { opacity: 0; transform: scale(0.9) translateY(-20px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+                .guest-modal-icon { margin-bottom: 20px; }
+                .guest-modal h2 { color: #1a1a1a; font-size: 24px; font-weight: 800; margin-bottom: 12px; }
+                .guest-modal p { color: #6b7280; font-size: 15px; line-height: 1.6; margin-bottom: 24px; }
+                .guest-modal-benefits { text-align: left; margin-bottom: 28px; }
+                .benefit-item { display: flex; align-items: center; gap: 12px; padding: 8px 0; color: #374151; font-size: 14px; }
+                .guest-modal-buttons { display: flex; flex-direction: column; gap: 12px; }
+                .btn-register { background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 14px 24px; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; transition: all 0.3s; }
+                .btn-register:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); }
+                .btn-login-alt { color: #2563eb; padding: 12px 24px; font-weight: 600; font-size: 14px; text-decoration: none; transition: all 0.3s; }
+                .btn-login-alt:hover { background: #eff6ff; border-radius: 8px; }
+                .guest-modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 28px; color: #9ca3af; cursor: pointer; }
+                .guest-modal-close:hover { color: #1a1a1a; }
+                .form-disabled { opacity: 0.6; pointer-events: none; }
+                .guest-form-overlay {
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(255,255,255,0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 12px;
+                    cursor: pointer;
+                    z-index: 10;
+                }
+                .guest-form-message {
+                    background: white;
+                    padding: 24px 32px;
+                    border-radius: 12px;
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                    text-align: center;
+                }
+                .guest-form-message h3 { color: #1a1a1a; margin-bottom: 8px; }
+                .guest-form-message p { color: #6b7280; font-size: 14px; }
+            </style>
+        `;
+        document.head.insertAdjacentHTML('beforeend', styles);
+    };
+
+    window.showGuestModal = () => {
+        document.getElementById('guestModal').style.display = 'flex';
+    };
+
+    window.closeGuestModal = () => {
+        document.getElementById('guestModal').style.display = 'none';
+    };
 
     // --- Configuración de API ---
     const getToken = () => localStorage.getItem('token');
@@ -32,7 +146,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const apiCall = async (endpoint, method = 'GET', body = null, isFormData = false) => {
         const token = getToken();
-        if (!token) { logout(); return; }
+        if (!token) { 
+            showGuestModal();
+            return null;
+        }
 
         const options = {
             method,
@@ -272,7 +389,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     goToListBtn.addEventListener('click', () => {
-        window.location.href = 'mis-denuncias.html';
+        window.location.href = '../ciudadano/mis-denuncias.html';
     });
 
     // --- Cerrar Sesión ---
@@ -283,10 +400,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    // --- Overlay para invitados en el formulario ---
+    const addGuestOverlay = () => {
+        if (!isGuest) return;
+        
+        const formCard = document.querySelector('.form-card');
+        if (formCard) {
+            formCard.style.position = 'relative';
+            const overlay = document.createElement('div');
+            overlay.className = 'guest-form-overlay';
+            overlay.onclick = showGuestModal;
+            overlay.innerHTML = `
+                <div class="guest-form-message">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" style="margin-bottom: 12px;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <h3>Regístrate para reportar</h3>
+                    <p>Haz clic aquí para crear tu cuenta gratuita</p>
+                </div>
+            `;
+            formCard.appendChild(overlay);
+        }
+    };
+
     // --- Inicialización ---
     const init = async () => {
+        createGuestModal();
         initMap();
         await loadCategorias();
+        addGuestOverlay();
+        
+        // Si es invitado, mostrar modal automáticamente después de un breve delay
+        if (isGuest) {
+            setTimeout(() => {
+                showGuestModal();
+            }, 1500);
+        }
     };
 
     init();

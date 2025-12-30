@@ -31,66 +31,43 @@ const upload = multer({
     }
 });
 
+// =================================================================
+// FUNCIONES QUE USAN PROCEDIMIENTOS ALMACENADOS
+// =================================================================
+
 // Obtener todas las denuncias del usuario logueado
 exports.obtenerDenunciasUsuario = (req, res) => {
-    // El middleware authMiddleware añade el usuario a la petición
-    const userId = req.user.id; 
+    const userId = req.user.id;
 
-    const query = `
-        SELECT 
-            d.id, d.folio, d.titulo, d.descripcion, d.estado, d.fecha_creacion,
-            d.latitud, d.longitud, d.fecha_actualizacion,
-            c.nombre AS categoria,
-            (SELECT url_imagen FROM imagenes_denuncia WHERE id_denuncia = d.id LIMIT 1) AS imagen_url
-        FROM denuncias d
-        JOIN categorias c ON d.id_categoria = c.id
-        WHERE d.id_usuario = ?
-        ORDER BY d.fecha_creacion DESC
-    `;
-
-    db.query(query, [userId], (err, results) => {
+    db.query('CALL sp_obtener_denuncias_usuario(?)', [userId], (err, results) => {
         if (err) {
-            console.error('Error al obtener denuncias del usuario:', err);
+            console.error('Error al ejecutar sp_obtener_denuncias_usuario:', err);
             return res.status(500).json({ message: 'Error del servidor al obtener las denuncias.' });
         }
-        res.json(results);
+        // Los resultados de un CALL vienen en results[0]
+        res.json(results[0]);
     });
 };
 
-// Obtener todas las denuncias (para reportes)
+// Obtener todas las denuncias (para autoridades)
 exports.obtenerTodasDenuncias = (req, res) => {
-    const query = `
-        SELECT 
-            d.id, d.folio, d.titulo, d.descripcion, d.estado, d.fecha_creacion,
-            d.latitud, d.longitud, d.fecha_actualizacion,
-            c.nombre AS categoria, c.id AS id_categoria,
-            u.nombre, u.apellido,
-            (SELECT url_imagen FROM imagenes_denuncia WHERE id_denuncia = d.id LIMIT 1) AS foto_url
-        FROM denuncias d
-        JOIN categorias c ON d.id_categoria = c.id
-        JOIN usuarios u ON d.id_usuario = u.id
-        ORDER BY d.fecha_creacion DESC
-    `;
-
-    db.query(query, (err, results) => {
+    db.query('CALL sp_obtener_todas_denuncias()', (err, results) => {
         if (err) {
-            console.error('Error al obtener todas las denuncias:', err);
+            console.error('Error al ejecutar sp_obtener_todas_denuncias:', err);
             return res.status(500).json({ message: 'Error del servidor al obtener las denuncias.' });
         }
-        res.json(results);
+        res.json(results[0]);
     });
 };
 
 // Obtener categorías
 exports.obtenerCategorias = (req, res) => {
-    const query = 'SELECT id, nombre FROM categorias';
-    
-    db.query(query, (err, results) => {
+    db.query('CALL sp_obtener_categorias()', (err, results) => {
         if (err) {
-            console.error('Error al obtener categorías:', err);
+            console.error('Error al ejecutar sp_obtener_categorias:', err);
             return res.status(500).json({ message: 'Error del servidor al obtener las categorías.' });
         }
-        res.json(results);
+        res.json(results[0]);
     });
 };
 
@@ -112,78 +89,63 @@ exports.crearDenuncia = (req, res) => {
         imagenUrl = `/uploads/${req.file.filename}`;
     }
 
-    // Insertar denuncia en la base de datos
-    const queryDenuncia = `
-        INSERT INTO denuncias (folio, titulo, descripcion, id_categoria, latitud, longitud, id_usuario, estado)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'recibido')
-    `;
-
-    db.query(queryDenuncia, [folio, titulo, descripcion, id_categoria, latitud, longitud, userId], (err, results) => {
-        if (err) {
-            console.error('Error al crear denuncia:', err);
-            
-            // Si hay error y se subió imagen, eliminarla
-            if (req.file) {
-                fs.unlink(req.file.path, (unlinkErr) => {
-                    if (unlinkErr) console.error('Error al eliminar imagen:', unlinkErr);
-                });
-            }
-            
-            return res.status(500).json({ message: 'Error del servidor al crear la denuncia.' });
-        }
-
-        const denunciaId = results.insertId;
-
-        // Si hay imagen, insertarla en la tabla de imágenes
-        if (imagenUrl) {
-            const queryImagen = `
-                INSERT INTO imagenes_denuncia (url_imagen, id_denuncia)
-                VALUES (?, ?)
-            `;
-
-            db.query(queryImagen, [imagenUrl, denunciaId], (err) => {
-                if (err) {
-                    console.error('Error al guardar imagen:', err);
-                    // No retornar error fatal, la denuncia se creó igual
+    // Llamar al procedimiento almacenado para crear denuncia
+    db.query(
+        'CALL sp_crear_denuncia(?, ?, ?, ?, ?, ?, ?)',
+        [folio, titulo, descripcion, id_categoria, latitud, longitud, userId],
+        (err, results) => {
+            if (err) {
+                console.error('Error al ejecutar sp_crear_denuncia:', err);
+                
+                // Si hay error y se subió imagen, eliminarla
+                if (req.file) {
+                    fs.unlink(req.file.path, (unlinkErr) => {
+                        if (unlinkErr) console.error('Error al eliminar imagen:', unlinkErr);
+                    });
                 }
+                
+                return res.status(500).json({ message: 'Error del servidor al crear la denuncia.' });
+            }
 
+            // El procedimiento devuelve el ID en el primer result set
+            const denunciaId = results[0][0].id_denuncia;
+
+            // Si hay imagen, insertarla usando el procedimiento almacenado
+            if (imagenUrl) {
+                db.query('CALL sp_insertar_imagen_denuncia(?, ?)', [imagenUrl, denunciaId], (err) => {
+                    if (err) {
+                        console.error('Error al ejecutar sp_insertar_imagen_denuncia:', err);
+                        // No retornar error fatal, la denuncia se creó igual
+                    }
+
+                    res.status(201).json({
+                        message: 'Denuncia creada exitosamente',
+                        folio: folio,
+                        denunciaId: denunciaId,
+                        imagenUrl: imagenUrl
+                    });
+                });
+            } else {
                 res.status(201).json({
                     message: 'Denuncia creada exitosamente',
                     folio: folio,
-                    denunciaId: denunciaId,
-                    imagenUrl: imagenUrl
+                    denunciaId: denunciaId
                 });
-            });
-        } else {
-            res.status(201).json({
-                message: 'Denuncia creada exitosamente',
-                folio: folio,
-                denunciaId: denunciaId
-            });
+            }
         }
-    });
+    );
 };
 
 // Obtener estadísticas del usuario logueado
 exports.obtenerEstadisticasUsuario = (req, res) => {
     const userId = req.user.id;
 
-    const query = `
-        SELECT 
-            COUNT(*) as total,
-            SUM(CASE WHEN estado = 'recibido' THEN 1 ELSE 0 END) as pendientes,
-            SUM(CASE WHEN estado = 'en_progreso' THEN 1 ELSE 0 END) en_progreso,
-            SUM(CASE WHEN estado = 'resuelto' THEN 1 ELSE 0 END) resueltas
-        FROM denuncias
-        WHERE id_usuario = ?
-    `;
-
-    db.query(query, [userId], (err, results) => {
+    db.query('CALL sp_obtener_estadisticas_usuario(?)', [userId], (err, results) => {
         if (err) {
-            console.error('Error al obtener estadísticas del usuario:', err);
+            console.error('Error al ejecutar sp_obtener_estadisticas_usuario:', err);
             return res.status(500).json({ message: 'Error del servidor al obtener las estadísticas.' });
         }
-        res.json(results[0]); // Devuelve la primera (y única) fila de resultados
+        res.json(results[0][0]); // Devuelve la primera fila del primer result set
     });
 };
 
@@ -194,45 +156,24 @@ exports.upload = upload;
 exports.obtenerDetalleDenuncia = (req, res) => {
     const { id } = req.params;
     
-    const query = `
-        SELECT 
-            d.id, d.folio, d.titulo, d.descripcion, d.estado, d.fecha_creacion,
-            d.latitud, d.longitud, d.fecha_actualizacion,
-            c.nombre AS categoria, c.id AS id_categoria,
-            u.nombre AS ciudadano_nombre, u.apellido AS ciudadano_apellido, u.id AS id_usuario,
-            GROUP_CONCAT(img.url_imagen) AS imagen_url
-        FROM denuncias d
-        JOIN categorias c ON d.id_categoria = c.id
-        JOIN usuarios u ON d.id_usuario = u.id
-        LEFT JOIN imagenes_denuncia img ON d.id = img.id_denuncia
-        WHERE d.id = ?
-        GROUP BY d.id
-    `;
-    
-    db.query(query, [id], (err, results) => {
+    db.query('CALL sp_obtener_detalle_denuncia(?)', [id], (err, results) => {
         if (err) {
-            console.error('Error al obtener detalle de denuncia:', err);
+            console.error('Error al ejecutar sp_obtener_detalle_denuncia:', err);
             return res.status(500).json({ message: 'Error del servidor' });
         }
         
-        if (results.length === 0) {
+        if (results[0].length === 0) {
             return res.status(404).json({ message: 'Denuncia no encontrada' });
         }
         
-        const denuncia = results[0];
-        // Si hay múltiples imágenes, tomar la primera
-        if (denuncia.imagen_url) {
-            denuncia.imagen_url = denuncia.imagen_url.split(',')[0];
-        }
-        
-        res.json(denuncia);
+        res.json(results[0][0]);
     });
 };
 
-// Actualizar estado y calificación de una denuncia
+// Actualizar estado de una denuncia
 exports.actualizarDenuncia = (req, res) => {
     const { id } = req.params;
-    const { estado, calificacion } = req.body;
+    const { estado } = req.body;
     
     if (!estado) {
         return res.status(400).json({ message: 'El estado es requerido' });
@@ -243,32 +184,25 @@ exports.actualizarDenuncia = (req, res) => {
         return res.status(400).json({ message: 'Estado inválido' });
     }
     
-    let query = 'UPDATE denuncias SET estado = ?, fecha_actualizacion = CURRENT_TIMESTAMP';
-    let params = [estado];
-    
-    if (calificacion !== undefined) {
-        if (calificacion < 1 || calificacion > 5) {
-            return res.status(400).json({ message: 'Calificación debe estar entre 1 y 5' });
+    db.query(
+        'CALL sp_actualizar_estado_denuncia(?, ?)',
+        [id, estado],
+        (err, results) => {
+            if (err) {
+                console.error('Error al ejecutar sp_actualizar_estado_denuncia:', err);
+                return res.status(500).json({ message: 'Error del servidor' });
+            }
+            
+            // El procedimiento devuelve las filas afectadas en el primer result set
+            const filasAfectadas = results[0][0].filas_afectadas;
+            
+            if (filasAfectadas === 0) {
+                return res.status(404).json({ message: 'Denuncia no encontrada' });
+            }
+            
+            res.json({ message: 'Denuncia actualizada correctamente' });
         }
-        query += ', calificacion = ?';
-        params.push(calificacion);
-    }
-    
-    query += ' WHERE id = ?';
-    params.push(id);
-    
-    db.query(query, params, (err, results) => {
-        if (err) {
-            console.error('Error al actualizar denuncia:', err);
-            return res.status(500).json({ message: 'Error del servidor' });
-        }
-        
-        if (results.affectedRows === 0) {
-            return res.status(404).json({ message: 'Denuncia no encontrada' });
-        }
-        
-        res.json({ message: 'Denuncia actualizada correctamente' });
-    });
+    );
 };
 
 // Agregar comentario a una denuncia
@@ -282,47 +216,39 @@ exports.agregarComentario = (req, res) => {
         return res.status(400).json({ message: 'El comentario no puede estar vacío' });
     }
     
-    const query = `
-        INSERT INTO comentarios_seguimiento (texto, id_denuncia, id_usuario)
-        VALUES (?, ?, ?)
-    `;
-    
-    db.query(query, [texto, id, userId], (err, results) => {
-        if (err) {
-            console.error('Error al agregar comentario:', err);
-            return res.status(500).json({ message: 'Error del servidor' });
+    db.query(
+        'CALL sp_agregar_comentario(?, ?, ?)',
+        [texto, id, userId],
+        (err, results) => {
+            if (err) {
+                console.error('Error al ejecutar sp_agregar_comentario:', err);
+                return res.status(500).json({ message: 'Error del servidor' });
+            }
+            
+            // El procedimiento devuelve el ID en el primer result set
+            const idComentario = results[0][0].id_comentario;
+            
+            res.status(201).json({
+                id: idComentario,
+                texto: texto,
+                fecha: new Date(),
+                es_autoridad: userRole === 'autoridad'
+            });
         }
-        
-        res.status(201).json({
-            id: results.insertId,
-            texto: texto,
-            fecha: new Date(),
-            es_autoridad: userRole === 'autoridad'
-        });
-    });
+    );
 };
 
 // Obtener comentarios de una denuncia
 exports.obtenerComentarios = (req, res) => {
     const { id } = req.params;
     
-    const query = `
-        SELECT 
-            cs.id, cs.texto, cs.fecha, cs.id_usuario,
-            u.nombre, u.apellido, u.rol
-        FROM comentarios_seguimiento cs
-        JOIN usuarios u ON cs.id_usuario = u.id
-        WHERE cs.id_denuncia = ?
-        ORDER BY cs.fecha ASC
-    `;
-    
-    db.query(query, [id], (err, results) => {
+    db.query('CALL sp_obtener_comentarios(?)', [id], (err, results) => {
         if (err) {
-            console.error('Error al obtener comentarios:', err);
+            console.error('Error al ejecutar sp_obtener_comentarios:', err);
             return res.status(500).json({ message: 'Error del servidor' });
         }
         
-        const comentarios = results.map(c => ({
+        const comentarios = results[0].map(c => ({
             id: c.id,
             texto: c.texto,
             fecha: c.fecha,

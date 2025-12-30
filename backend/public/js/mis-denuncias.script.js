@@ -9,18 +9,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Estado de la aplicación ---
     let allDenuncias = [];
     let currentFilter = 'all';
+    const isGuest = !localStorage.getItem('token');
 
     // --- Funciones de Autenticación y Utilidades ---
     const getToken = () => localStorage.getItem('token');
     const logout = () => {
         localStorage.clear();
-        window.location.href = 'login.html';
+        window.location.href = '../login.html';
     };
 
     // --- Función de la API ---
     const apiCall = async (endpoint) => {
         const token = getToken();
-        if (!token) { logout(); return; }
+        if (!token) return null;
         const response = await fetch(`${window.location.origin}/api/denuncias${endpoint}`, {
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
         });
@@ -32,6 +33,25 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     const loadDenuncias = async () => {
+        if (isGuest) {
+            // Mostrar mensaje para invitados
+            denunciasListEl.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: #f9fafb; border-radius: 12px; border: 2px dashed #e5e7eb;">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="margin-bottom: 16px;">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <line x1="9" y1="15" x2="15" y2="15"></line>
+                    </svg>
+                    <h3 style="color: #374151; font-size: 18px; font-weight: 700; margin-bottom: 8px;">Inicia sesión para ver tus denuncias</h3>
+                    <p style="color: #6b7280; margin-bottom: 20px;">Regístrate o inicia sesión para ver el historial de tus reportes.</p>
+                    <a href="registro.html" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-block; margin-right: 12px;">Crear Cuenta</a>
+                    <a href="login.html" style="color: #2563eb; padding: 12px 24px; font-weight: 600; text-decoration: none;">Iniciar Sesión</a>
+                </div>
+            `;
+            return;
+        }
+        
         try {
             allDenuncias = await apiCall('/mis-denuncias');
             console.log('Denuncias cargadas:', allDenuncias);
@@ -49,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             case 'recibido': return { text: 'Pendiente', class: 'pending' };
             case 'en_progreso': return { text: 'En Proceso', class: 'in-progress' };
             case 'resuelto': return { text: 'Resuelta', class: 'resolved' };
+            case 'rechazado': return { text: 'Rechazada', class: 'rejected' };
             default: return { text: 'Desconocido', class: 'pending' };
         }
     };
@@ -113,11 +134,13 @@ document.addEventListener('DOMContentLoaded', async () => {
             recibido: allDenuncias.filter(d => d.estado === 'recibido').length,
             en_progreso: allDenuncias.filter(d => d.estado === 'en_progreso').length,
             resuelto: allDenuncias.filter(d => d.estado === 'resuelto').length,
+            rechazado: allDenuncias.filter(d => d.estado === 'rechazado').length,
         };
         document.getElementById('count-all').textContent = counts.all;
         document.getElementById('count-pending').textContent = counts.recibido;
         document.getElementById('count-progress').textContent = counts.en_progreso;
         document.getElementById('count-resolved').textContent = counts.resuelto;
+        document.getElementById('count-rejected').textContent = counts.rechazado;
     };
 
     // --- Event Listeners ---
@@ -177,7 +200,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             const detalle = await apiCall(`/${id}`);
             // comentarios
             let comentarios = [];
-            try { comentarios = await apiCall(`/${id}/comentarios`); } catch(e){ comentarios = []; }
+            try { 
+                const token = getToken();
+                const res = await fetch(`${window.location.origin}/api/denuncias/${id}/comentarios`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (res.ok) comentarios = await res.json();
+            } catch(e){ 
+                console.warn('Error cargando comentarios:', e);
+                comentarios = []; 
+            }
 
             // Popular campos
             detailFolio.textContent = detalle.folio || '-';

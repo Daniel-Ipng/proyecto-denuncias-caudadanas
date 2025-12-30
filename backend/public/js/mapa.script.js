@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         status: ['recibido', 'en_progreso', 'resuelto'],
         category: []
     };
+    const isGuest = !localStorage.getItem('token');
 
     // --- Funciones de Autenticación ---
     const getToken = () => localStorage.getItem('token');
@@ -24,17 +25,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     };
 
     // --- Función de la API ---
-    const apiCall = async (endpoint, method = 'GET') => {
+    const apiCall = async (endpoint, method = 'GET', requiresAuth = true) => {
         const token = getToken();
-        if (!token) { logout(); return; }
+        
+        // Si requiere auth y no hay token, salir
+        if (requiresAuth && !token && !isGuest) { logout(); return; }
+        
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
 
-        const options = {
-            method,
-            headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
-        };
+        const options = { method, headers };
 
         const response = await fetch(`${window.location.origin}/api/denuncias${endpoint}`, options);
         
@@ -59,13 +61,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // --- Cargar Denuncias ---
     const loadDenuncias = async () => {
         try {
-            allDenuncias = await apiCall('/todas');
+            // La ruta /todas es pública, no requiere autenticación
+            allDenuncias = await apiCall('/todas', 'GET', false);
             console.log('Denuncias cargadas para mapa:', allDenuncias);
             renderMarkers();
             updateStats();
         } catch (error) {
             console.error('Error al cargar denuncias:', error);
-            alert('Error al cargar las denuncias en el mapa');
         }
     };
 

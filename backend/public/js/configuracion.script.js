@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // --- Estado de la aplicación ---
     let userData = null;
+    const isGuest = !localStorage.getItem('token');
 
     // --- Funciones de Autenticación ---
     const getToken = () => localStorage.getItem('token');
@@ -22,6 +23,27 @@ document.addEventListener('DOMContentLoaded', async () => {
         localStorage.clear();
         window.location.href = '../login.html';
     };
+
+    // --- Mostrar mensaje para invitados ---
+    if (isGuest) {
+        const mainContent = document.querySelector('.main-content');
+        if (mainContent) {
+            mainContent.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; min-height: 60vh;">
+                    <div style="text-align: center; padding: 60px 20px; background: #f9fafb; border-radius: 12px; border: 2px dashed #e5e7eb; max-width: 500px;">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" style="margin-bottom: 16px;">
+                            <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        <h3 style="color: #374151; font-size: 18px; font-weight: 700; margin-bottom: 8px;">Configuración requiere cuenta</h3>
+                        <p style="color: #6b7280; margin-bottom: 20px;">Para acceder a la configuración de tu perfil, necesitas iniciar sesión.</p>
+                        <a href="../registro.html" style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); color: white; padding: 12px 24px; border-radius: 8px; font-weight: 700; text-decoration: none; display: inline-block; margin-right: 12px;">Crear Cuenta</a>
+                        <a href="../login.html" style="color: #2563eb; padding: 12px 24px; font-weight: 600; text-decoration: none;">Iniciar Sesión</a>
+                    </div>
+                </div>
+            `;
+        }
+        return;
+    }
 
     // --- Funciones de API ---
     const apiCall = async (endpoint, method = 'GET', body = null) => {
