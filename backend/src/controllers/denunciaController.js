@@ -1,22 +1,9 @@
-const db = require('../config/db');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
+const { subirImagen, eliminarImagen } = require('../config/cloudinary');
+const { Denuncia, Categoria, Comentario } = require('../models');
 
-// Configurar almacenamiento de imágenes
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../../public/uploads');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'denuncia-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
+// Configurar almacenamiento en memoria para subir a Cloudinary
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
@@ -32,147 +19,142 @@ const upload = multer({
 });
 
 // =================================================================
-// FUNCIONES QUE USAN PROCEDIMIENTOS ALMACENADOS
+// FUNCIONES QUE USAN MODELOS
 // =================================================================
 
 // Obtener todas las denuncias del usuario logueado
-exports.obtenerDenunciasUsuario = (req, res) => {
-    const userId = req.user.id;
-
-    db.query('CALL sp_obtener_denuncias_usuario(?)', [userId], (err, results) => {
-        if (err) {
-            console.error('Error al ejecutar sp_obtener_denuncias_usuario:', err);
-            return res.status(500).json({ message: 'Error del servidor al obtener las denuncias.' });
-        }
-        // Los resultados de un CALL vienen en results[0]
-        res.json(results[0]);
-    });
+exports.obtenerDenunciasUsuario = async (req, res) => {
+    try {
+        const denuncias = await Denuncia.findByUsuario(req.user.id);
+        res.json(denuncias);
+    } catch (err) {
+        console.error('Error al obtener denuncias del usuario:', err);
+        res.status(500).json({ message: 'Error del servidor al obtener las denuncias.' });
+    }
 };
 
 // Obtener todas las denuncias (para autoridades)
-exports.obtenerTodasDenuncias = (req, res) => {
-    db.query('CALL sp_obtener_todas_denuncias()', (err, results) => {
-        if (err) {
-            console.error('Error al ejecutar sp_obtener_todas_denuncias:', err);
-            return res.status(500).json({ message: 'Error del servidor al obtener las denuncias.' });
-        }
-        res.json(results[0]);
-    });
+exports.obtenerTodasDenuncias = async (req, res) => {
+    try {
+        const denuncias = await Denuncia.findAll();
+        res.json(denuncias);
+    } catch (err) {
+        console.error('Error al obtener todas las denuncias:', err);
+        res.status(500).json({ message: 'Error del servidor al obtener las denuncias.' });
+    }
 };
 
 // Obtener categorías
-exports.obtenerCategorias = (req, res) => {
-    db.query('CALL sp_obtener_categorias()', (err, results) => {
-        if (err) {
-            console.error('Error al ejecutar sp_obtener_categorias:', err);
-            return res.status(500).json({ message: 'Error del servidor al obtener las categorías.' });
-        }
-        res.json(results[0]);
-    });
+exports.obtenerCategorias = async (req, res) => {
+    try {
+        const categorias = await Categoria.findAll();
+        res.json(categorias);
+    } catch (err) {
+        console.error('Error al obtener categorías:', err);
+        res.status(500).json({ message: 'Error del servidor al obtener las categorías.' });
+    }
 };
 
 // Crear nueva denuncia
-exports.crearDenuncia = (req, res) => {
+exports.crearDenuncia = async (req, res) => {
     const userId = req.user.id;
-    const { folio, titulo, descripcion, id_categoria, latitud, longitud } = req.body;
+    const { folio, titulo, descripcion, placa, id_categoria, latitud, longitud } = req.body;
 
-    // Validaciones básicas
+    // Validaciones básicas (placa es opcional)
     if (!folio || !titulo || !descripcion || !id_categoria || !latitud || !longitud) {
         return res.status(400).json({ 
             message: 'Todos los campos son requeridos: folio, titulo, descripcion, id_categoria, latitud, longitud' 
         });
     }
+    
+    // La placa es opcional, si viene vacía la convertimos a null
+    const placaValue = placa && placa.trim() !== '' ? placa.trim().toUpperCase() : null;
 
-    // Ruta de la imagen si existe
+    // Subir imagen a Cloudinary si existe
     let imagenUrl = null;
+    let cloudinaryPublicId = null;
+    
     if (req.file) {
-        imagenUrl = `/uploads/${req.file.filename}`;
+        try {
+            const resultado = await subirImagen(req.file.buffer, 'denuncias');
+            imagenUrl = resultado.secure_url;
+            cloudinaryPublicId = resultado.public_id;
+        } catch (error) {
+            console.error('Error al subir imagen a Cloudinary:', error);
+            return res.status(500).json({ message: 'Error al subir la imagen' });
+        }
     }
 
-    // Llamar al procedimiento almacenado para crear denuncia
-    // Orden: folio, titulo, descripcion, latitud, longitud, id_usuario, id_categoria
-    db.query(
-        'CALL sp_crear_denuncia(?, ?, ?, ?, ?, ?, ?)',
-        [folio, titulo, descripcion, latitud, longitud, userId, id_categoria],
-        (err, results) => {
-            if (err) {
-                console.error('Error al ejecutar sp_crear_denuncia:', err);
-                
-                // Si hay error y se subió imagen, eliminarla
-                if (req.file) {
-                    fs.unlink(req.file.path, (unlinkErr) => {
-                        if (unlinkErr) console.error('Error al eliminar imagen:', unlinkErr);
-                    });
-                }
-                
-                return res.status(500).json({ message: 'Error del servidor al crear la denuncia.' });
-            }
+    try {
+        // Crear denuncia usando el modelo
+        const denunciaId = await Denuncia.create({
+            folio, titulo, descripcion, 
+            placa: placaValue, 
+            id_categoria, latitud, longitud, 
+            id_usuario: userId
+        });
 
-            // El procedimiento devuelve el ID en el primer result set
-            const denunciaId = results[0][0].insertId;
+        // Si hay imagen, agregarla a la denuncia
+        if (imagenUrl) {
+            await Denuncia.agregarImagen(denunciaId, imagenUrl);
+        }
 
-            // Si hay imagen, insertarla usando el procedimiento almacenado
-            if (imagenUrl) {
-                db.query('CALL sp_insertar_imagen_denuncia(?, ?)', [imagenUrl, denunciaId], (err) => {
-                    if (err) {
-                        console.error('Error al ejecutar sp_insertar_imagen_denuncia:', err);
-                        // No retornar error fatal, la denuncia se creó igual
-                    }
-
-                    res.status(201).json({
-                        message: 'Denuncia creada exitosamente',
-                        folio: folio,
-                        denunciaId: denunciaId,
-                        imagenUrl: imagenUrl
-                    });
-                });
-            } else {
-                res.status(201).json({
-                    message: 'Denuncia creada exitosamente',
-                    folio: folio,
-                    denunciaId: denunciaId
-                });
+        res.status(201).json({
+            message: 'Denuncia creada exitosamente',
+            folio: folio,
+            denunciaId: denunciaId,
+            imagenUrl: imagenUrl
+        });
+    } catch (err) {
+        console.error('Error al crear denuncia:', err);
+        
+        // Si hay error y se subió imagen a Cloudinary, eliminarla
+        if (cloudinaryPublicId) {
+            try {
+                await eliminarImagen(cloudinaryPublicId);
+            } catch (deleteErr) {
+                console.error('Error al eliminar imagen de Cloudinary:', deleteErr);
             }
         }
-    );
+        
+        res.status(500).json({ message: 'Error del servidor al crear la denuncia.' });
+    }
 };
 
 // Obtener estadísticas del usuario logueado
-exports.obtenerEstadisticasUsuario = (req, res) => {
-    const userId = req.user.id;
-
-    db.query('CALL sp_obtener_estadisticas_usuario(?)', [userId], (err, results) => {
-        if (err) {
-            console.error('Error al ejecutar sp_obtener_estadisticas_usuario:', err);
-            return res.status(500).json({ message: 'Error del servidor al obtener las estadísticas.' });
-        }
-        res.json(results[0][0]); // Devuelve la primera fila del primer result set
-    });
+exports.obtenerEstadisticasUsuario = async (req, res) => {
+    try {
+        const estadisticas = await Denuncia.getEstadisticasUsuario(req.user.id);
+        res.json(estadisticas);
+    } catch (err) {
+        console.error('Error al obtener estadísticas del usuario:', err);
+        res.status(500).json({ message: 'Error del servidor al obtener las estadísticas.' });
+    }
 };
 
 // Exportar multer para usar en rutas
 exports.upload = upload;
 
 // Obtener detalle completo de una denuncia
-exports.obtenerDetalleDenuncia = (req, res) => {
+exports.obtenerDetalleDenuncia = async (req, res) => {
     const { id } = req.params;
     
-    db.query('CALL sp_obtener_detalle_denuncia(?)', [id], (err, results) => {
-        if (err) {
-            console.error('Error al ejecutar sp_obtener_detalle_denuncia:', err);
-            return res.status(500).json({ message: 'Error del servidor' });
-        }
+    try {
+        const denuncia = await Denuncia.findById(id);
         
-        if (results[0].length === 0) {
+        if (!denuncia) {
             return res.status(404).json({ message: 'Denuncia no encontrada' });
         }
         
-        res.json(results[0][0]);
-    });
+        res.json(denuncia);
+    } catch (err) {
+        console.error('Error al obtener detalle de denuncia:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 };
 
 // Actualizar estado de una denuncia
-exports.actualizarDenuncia = (req, res) => {
+exports.actualizarDenuncia = async (req, res) => {
     const { id } = req.params;
     const { estado } = req.body;
     
@@ -185,29 +167,22 @@ exports.actualizarDenuncia = (req, res) => {
         return res.status(400).json({ message: 'Estado inválido' });
     }
     
-    db.query(
-        'CALL sp_actualizar_estado_denuncia(?, ?)',
-        [id, estado],
-        (err, results) => {
-            if (err) {
-                console.error('Error al ejecutar sp_actualizar_estado_denuncia:', err);
-                return res.status(500).json({ message: 'Error del servidor' });
-            }
-            
-            // El procedimiento devuelve las filas afectadas en el primer result set
-            const filasAfectadas = results[0][0].filas_afectadas;
-            
-            if (filasAfectadas === 0) {
-                return res.status(404).json({ message: 'Denuncia no encontrada' });
-            }
-            
-            res.json({ message: 'Denuncia actualizada correctamente' });
+    try {
+        const actualizado = await Denuncia.updateEstado(id, estado);
+        
+        if (!actualizado) {
+            return res.status(404).json({ message: 'Denuncia no encontrada' });
         }
-    );
+        
+        res.json({ message: 'Denuncia actualizada correctamente' });
+    } catch (err) {
+        console.error('Error al actualizar denuncia:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 };
 
 // Agregar comentario a una denuncia
-exports.agregarComentario = (req, res) => {
+exports.agregarComentario = async (req, res) => {
     const { id } = req.params;
     const { texto } = req.body;
     const userId = req.user.id;
@@ -217,46 +192,51 @@ exports.agregarComentario = (req, res) => {
         return res.status(400).json({ message: 'El comentario no puede estar vacío' });
     }
     
-    db.query(
-        'CALL sp_agregar_comentario(?, ?, ?)',
-        [texto, id, userId],
-        (err, results) => {
-            if (err) {
-                console.error('Error al ejecutar sp_agregar_comentario:', err);
-                return res.status(500).json({ message: 'Error del servidor' });
-            }
-            
-            // El procedimiento devuelve el ID en el primer result set
-            const idComentario = results[0][0].id_comentario;
-            
-            res.status(201).json({
-                id: idComentario,
-                texto: texto,
-                fecha: new Date(),
-                es_autoridad: userRole === 'autoridad'
-            });
-        }
-    );
+    try {
+        const idComentario = await Comentario.create({
+            texto,
+            id_denuncia: id,
+            id_usuario: userId
+        });
+        
+        res.status(201).json({
+            id: idComentario,
+            texto: texto,
+            fecha: new Date(),
+            es_autoridad: userRole === 'autoridad'
+        });
+    } catch (err) {
+        console.error('Error al agregar comentario:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 };
 
 // Obtener comentarios de una denuncia
-exports.obtenerComentarios = (req, res) => {
+exports.obtenerComentarios = async (req, res) => {
     const { id } = req.params;
     
-    db.query('CALL sp_obtener_comentarios(?)', [id], (err, results) => {
-        if (err) {
-            console.error('Error al ejecutar sp_obtener_comentarios:', err);
-            return res.status(500).json({ message: 'Error del servidor' });
-        }
-        
-        const comentarios = results[0].map(c => ({
-            id: c.id,
-            texto: c.texto,
-            fecha: c.fecha,
-            autor: `${c.nombre} ${c.apellido}`,
-            es_autoridad: c.rol === 'autoridad'
-        }));
-        
+    try {
+        const comentarios = await Comentario.findByDenuncia(id);
         res.json(comentarios);
-    });
+    } catch (err) {
+        console.error('Error al obtener comentarios:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
+};
+
+// Buscar denuncias por placa
+exports.buscarPorPlaca = async (req, res) => {
+    const { placa } = req.query;
+    
+    if (!placa || placa.trim() === '') {
+        return res.status(400).json({ message: 'Debe proporcionar una placa para buscar' });
+    }
+    
+    try {
+        const denuncias = await Denuncia.findByPlaca(placa.trim());
+        res.json(denuncias);
+    } catch (err) {
+        console.error('Error al buscar por placa:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 };

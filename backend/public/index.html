@@ -3,7 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte Urbano</title>
+    <meta name="description" content="Reporte Urbano - Plataforma ciudadana para reportar problemas urbanos. Reporta baches, alumbrado, basura y más. Juntos mejoramos nuestra ciudad.">
+    <meta name="keywords" content="denuncias urbanas, reportes ciudadanos, problemas urbanos, baches, alumbrado público, seguridad ciudadana">
+    <meta name="author" content="Reporte Urbano">
+    <meta name="theme-color" content="#0066FF">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%230066FF' width='100' height='100' rx='20'/%3E%3Crect fill='white' x='30' y='30' width='40' height='40' rx='5'/%3E%3C/svg%3E">
+    <title>Reporte Urbano - Plataforma de Denuncias Ciudadanas</title>
     <link rel="stylesheet" href="style.css">
     <script src="script.js" defer></script>
 </head>
@@ -17,25 +22,25 @@
             </div>
             <ul class = "nav-links">
                 <li><a href = "#inicio">Inicio</a></li>
-                <li><a href = "#como-funciona">Como Funciona</a></li>
-                <li><a href = "#comunidad">Comunidad</a></li>
-                <li><a href = "#recursos">Recursos</a></li>
+                <li><a href = "#como-funciona">Cómo Funciona</a></li>
+                <li><a href = "#beneficios">Beneficios</a></li>
+                <li><a href = "#contacto">Contacto</a></li>
             </ul>
             <div class = "nav-buttons">
-                <a href = "ciudadano/nueva-denuncia.html" class = "btn-primary">Reportar un Problema</a>
-                <a href = "login.html" class = "btn-secondary">Iniciar Sesión/Registrarse</a>
+                <a href = "login.html" class = "btn-secondary">Iniciar Sesión</a>
+                <a href = "registro.html" class = "btn-primary">Registrarse</a>
             </div>
         </nav>
     </header>
 
     <!--Hero Section-->
-    <section class = "hero">
+    <section class = "hero" id="inicio">
         <div class = "hero-content">
             <h1>Haz que tu ciudad sea mejor, un reporte a la vez</h1>
             <p>Reporta problemas urbanos de forma rápida y sencilla. Juntos, podemos construir una comunidad más segura y eficiente.</p>
             <div class="hero-buttons">
-                <a href = "ciudadano/nueva-denuncia.html" class = "btn-primary">Reportar un Problema</a>
-                <a href = "ciudadano/dashboard.html" class = "btn-secondary">Explorar la Plataforma</a>
+                <a href = "login.html" class = "btn-primary" id="btn-reportar">Reportar un Problema</a>
+                <a href = "#como-funciona" class = "btn-secondary">Ver Cómo Funciona</a>
             </div>
         </div>
     </section>
@@ -83,7 +88,7 @@
     </section>
 
     <!--Beneficios Section-->
-    <section class = "beneficios">
+    <section class = "beneficios" id="beneficios">
         <h2>Beneficios de usar Reporte Urbano</h2>
         <p>Descubre cómo nuestra plataforma puede ayudarte a mejorar tu entorno urbano.</p>
         
@@ -118,41 +123,439 @@
     <section class = "cta-section">
         <h2>¡Empieza hoy mismo!</h2>
         <p>Reporta un problema y sé parte del cambio que quieres ver en tu ciudad.</p>
-        <a href="ciudadano/nueva-denuncia.html" class="btn-primary">Reportar un Problema</a>
+        <a href="registro.html" class="btn-primary">Crear mi Cuenta Gratis</a>
+    </section>
+
+    <!--Contacto Section-->
+    <section class="contacto-section" id="contacto">
+        <h2>Contáctanos</h2>
+        <p>¿Tienes preguntas o sugerencias? Estamos aquí para ayudarte.</p>
+        
+        <div class="contacto-grid">
+            <div class="contacto-card">
+                <div class="contacto-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </div>
+                <h3>Correo Electrónico</h3>
+                <p>contacto@reporteurbano.pe</p>
+                <a href="mailto:contacto@reporteurbano.pe" class="contacto-link">Enviar correo</a>
+            </div>
+            
+            <div class="contacto-card">
+                <div class="contacto-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                </div>
+                <h3>Teléfono</h3>
+                <p>(01) 234-5678</p>
+                <a href="tel:+5112345678" class="contacto-link">Llamar ahora</a>
+            </div>
+            
+            <div class="contacto-card">
+                <div class="contacto-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                        <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                </div>
+                <h3>Dirección</h3>
+                <p>Av. Principal 123, Lima, Perú</p>
+                <a href="https://maps.google.com" target="_blank" class="contacto-link">Ver en mapa</a>
+            </div>
+            
+            <div class="contacto-card">
+                <div class="contacto-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <h3>Horario de Atención</h3>
+                <p>Lunes a Viernes: 8:00 - 18:00</p>
+                <span class="contacto-status">Atención 24/7 en línea</span>
+            </div>
+        </div>
     </section>
 
     <!--Footer-->
     <footer>
         <div class="footer-content">
-            <ul class="footer-links">
-                <li><a href="#">Términos de Servicio</a></li>
-                <li><a href="#">Política de Privacidad</a></li>
-                <li><a href="#">Contacto</a></li>
-            </ul>
-            <div class="social-links">
-                <a href="#">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
-                    </svg>
-                </a>
-                <a href="#">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
-                    </svg>
-                </a>
-                <a href="#">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <rect x="2" y="2" width="20" height="20" rx="5"/>
-                        <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" fill="white"/>
-                        <circle cx="17.5" cy="6.5" r="1.5" fill="white"/>
-                    </svg>
-                </a>
+            <div class="footer-brand">
+                <div class="logo">
+                    <div class="logo-icon"></div>
+                    <span>Reporte Urbano</span>
+                </div>
+                <p>Plataforma ciudadana para reportar y dar seguimiento a problemas urbanos. Juntos construimos una mejor ciudad.</p>
+            </div>
+            <div class="footer-links-section">
+                <h4>Enlaces Rápidos</h4>
+                <ul class="footer-links">
+                    <li><a href="#inicio">Inicio</a></li>
+                    <li><a href="#como-funciona">Cómo Funciona</a></li>
+                    <li><a href="#beneficios">Beneficios</a></li>
+                    <li><a href="#contacto">Contacto</a></li>
+                </ul>
+            </div>
+            <div class="footer-links-section">
+                <h4>Legal</h4>
+                <ul class="footer-links">
+                    <li><a href="#" onclick="openModal('terms-modal'); return false;">Términos de Servicio</a></li>
+                    <li><a href="#" onclick="openModal('privacy-modal'); return false;">Política de Privacidad</a></li>
+                </ul>
+            </div>
+            <div class="footer-social">
+                <h4>Síguenos</h4>
+                <div class="social-links">
+                    <a href="#" aria-label="Twitter">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="Facebook">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/>
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="Instagram">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="2" y="2" width="20" height="20" rx="5"/>
+                            <path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z" fill="white"/>
+                            <circle cx="17.5" cy="6.5" r="1.5" fill="white"/>
+                        </svg>
+                    </a>
+                    <a href="#" aria-label="YouTube">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/>
+                            <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="white"/>
+                        </svg>
+                    </a>
+                </div>
             </div>
         </div>
         <div class="copyright">
-            © 2024 Reporte Urbano. Todos los derechos reservados.
+            © 2026 Reporte Urbano. Todos los derechos reservados.
         </div>
     </footer>
-    <!-- El script principal ya se carga con defer en el head -->
+    <!-- Script para manejar redirección según sesión -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            const userData = localStorage.getItem('userData');
+            const btnReportar = document.getElementById('btn-reportar');
+            
+            if (token && userData) {
+                const user = JSON.parse(userData);
+                // Usuario autenticado: redirigir a nueva denuncia
+                btnReportar.href = 'ciudadano/nueva-denuncia.html';
+                btnReportar.textContent = 'Ir a Reportar';
+                
+                // Actualizar botones del nav
+                const navButtons = document.querySelector('.nav-buttons');
+                navButtons.innerHTML = `
+                    <span style="color: white; margin-right: 10px;">Hola, ${user.nombre || 'Usuario'}</span>
+                    <a href="${user.rol === 'autoridad' ? 'autoridad' : 'ciudadano'}/dashboard.html" class="btn-primary">Mi Dashboard</a>
+                `;
+            }
+        });
+        
+        // Funciones para modales
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('legal-modal')) {
+                e.target.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+        
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.legal-modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
+
+    <!-- Modal Términos y Condiciones -->
+    <div id="terms-modal" class="legal-modal">
+        <div class="legal-modal-content">
+            <div class="legal-modal-header">
+                <h2>Términos y Condiciones</h2>
+                <button class="modal-close" onclick="closeModal('terms-modal')">&times;</button>
+            </div>
+            <div class="legal-modal-body">
+                <p class="last-updated">Última actualización: 5 de enero de 2026</p>
+                
+                <h3>1. Aceptación de los Términos</h3>
+                <p>Al acceder y utilizar la plataforma Reporte Urbano, usted acepta estar sujeto a estos Términos y Condiciones de uso. Si no está de acuerdo con alguna parte de estos términos, no podrá acceder al servicio.</p>
+                
+                <h3>2. Descripción del Servicio</h3>
+                <p>Reporte Urbano es una plataforma digital que permite a los ciudadanos reportar problemas urbanos como baches, alumbrado defectuoso, acumulación de basura, y otros inconvenientes en la vía pública para su atención por parte de las autoridades competentes.</p>
+                
+                <h3>3. Registro de Usuario</h3>
+                <p>Para utilizar el servicio, debe crear una cuenta proporcionando información veraz y actualizada. Usted es responsable de:</p>
+                <ul>
+                    <li>Mantener la confidencialidad de su contraseña</li>
+                    <li>Todas las actividades que ocurran bajo su cuenta</li>
+                    <li>Notificar inmediatamente cualquier uso no autorizado</li>
+                </ul>
+                
+                <h3>4. Uso Aceptable</h3>
+                <p>El usuario se compromete a:</p>
+                <ul>
+                    <li>Proporcionar información veraz en los reportes</li>
+                    <li>No realizar denuncias falsas o malintencionadas</li>
+                    <li>No utilizar la plataforma para fines ilegales</li>
+                    <li>No cargar contenido ofensivo, difamatorio o inapropiado</li>
+                    <li>Respetar los derechos de otros usuarios</li>
+                </ul>
+                
+                <h3>5. Contenido del Usuario</h3>
+                <p>Al enviar reportes, fotos o comentarios, usted otorga a Reporte Urbano una licencia no exclusiva para usar, reproducir y mostrar dicho contenido con fines de prestación del servicio y mejora de la comunidad.</p>
+                
+                <h3>6. Responsabilidades y Limitaciones</h3>
+                <p>Reporte Urbano actúa como intermediario entre ciudadanos y autoridades. No garantizamos:</p>
+                <ul>
+                    <li>Tiempos específicos de resolución de reportes</li>
+                    <li>Que todos los reportes serán atendidos</li>
+                    <li>La disponibilidad ininterrumpida del servicio</li>
+                </ul>
+                
+                <h3>7. Propiedad Intelectual</h3>
+                <p>Todo el contenido de la plataforma (diseño, logotipos, código) es propiedad de Reporte Urbano y está protegido por las leyes de propiedad intelectual.</p>
+                
+                <h3>8. Modificaciones</h3>
+                <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios serán efectivos inmediatamente después de su publicación.</p>
+                
+                <h3>9. Terminación</h3>
+                <p>Podemos suspender o terminar su cuenta si viola estos términos, sin previo aviso y sin responsabilidad hacia usted.</p>
+                
+                <h3>10. Contacto</h3>
+                <p>Para consultas sobre estos términos, contáctenos a través de la sección de contacto en nuestra plataforma.</p>
+            </div>
+            <div class="legal-modal-footer">
+                <button class="btn-primary" onclick="closeModal('terms-modal')">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Política de Privacidad -->
+    <div id="privacy-modal" class="legal-modal">
+        <div class="legal-modal-content">
+            <div class="legal-modal-header">
+                <h2>Política de Privacidad</h2>
+                <button class="modal-close" onclick="closeModal('privacy-modal')">&times;</button>
+            </div>
+            <div class="legal-modal-body">
+                <p class="last-updated">Última actualización: 5 de enero de 2026</p>
+                
+                <h3>1. Información que Recopilamos</h3>
+                <p>Recopilamos los siguientes tipos de información:</p>
+                <ul>
+                    <li><strong>Datos de identificación:</strong> Nombre, apellidos, DNI, correo electrónico</li>
+                    <li><strong>Datos de ubicación:</strong> Coordenadas GPS de los reportes realizados</li>
+                    <li><strong>Contenido multimedia:</strong> Fotos y videos adjuntos a los reportes</li>
+                    <li><strong>Datos de uso:</strong> Información sobre cómo utiliza la plataforma</li>
+                </ul>
+                
+                <h3>2. Uso de la Información</h3>
+                <p>Utilizamos su información para:</p>
+                <ul>
+                    <li>Procesar y gestionar sus reportes ciudadanos</li>
+                    <li>Comunicarnos con usted sobre el estado de sus denuncias</li>
+                    <li>Verificar su identidad mediante consulta a RENIEC</li>
+                    <li>Mejorar nuestros servicios y la experiencia del usuario</li>
+                    <li>Generar estadísticas anónimas sobre problemas urbanos</li>
+                </ul>
+                
+                <h3>3. Compartición de Datos</h3>
+                <p>Su información puede ser compartida con:</p>
+                <ul>
+                    <li><strong>Autoridades municipales:</strong> Para la atención de sus reportes</li>
+                    <li><strong>RENIEC:</strong> Para verificación de identidad</li>
+                    <li><strong>Proveedores de servicios:</strong> Que nos ayudan a operar la plataforma</li>
+                </ul>
+                <p>No vendemos ni alquilamos su información personal a terceros.</p>
+                
+                <h3>4. Seguridad de los Datos</h3>
+                <p>Implementamos medidas de seguridad técnicas y organizativas para proteger su información:</p>
+                <ul>
+                    <li>Cifrado de datos en tránsito y en reposo</li>
+                    <li>Acceso restringido a datos personales</li>
+                    <li>Monitoreo continuo de seguridad</li>
+                    <li>Copias de seguridad regulares</li>
+                </ul>
+                
+                <h3>5. Sus Derechos</h3>
+                <p>Usted tiene derecho a:</p>
+                <ul>
+                    <li><strong>Acceso:</strong> Solicitar una copia de sus datos personales</li>
+                    <li><strong>Rectificación:</strong> Corregir datos inexactos</li>
+                    <li><strong>Eliminación:</strong> Solicitar la eliminación de sus datos</li>
+                    <li><strong>Portabilidad:</strong> Recibir sus datos en formato estructurado</li>
+                    <li><strong>Oposición:</strong> Oponerse al procesamiento de sus datos</li>
+                </ul>
+                
+                <h3>6. Retención de Datos</h3>
+                <p>Conservamos sus datos mientras su cuenta esté activa o sea necesario para prestar el servicio. Los reportes y su historial se mantienen para fines estadísticos y de seguimiento de la gestión urbana.</p>
+                
+                <h3>7. Cookies</h3>
+                <p>Utilizamos cookies y tecnologías similares para mejorar su experiencia. Puede configurar su navegador para rechazar cookies, aunque esto puede afectar algunas funcionalidades.</p>
+                
+                <h3>8. Menores de Edad</h3>
+                <p>El servicio está dirigido a personas mayores de 18 años. No recopilamos intencionalmente información de menores de edad.</p>
+                
+                <h3>9. Cambios en la Política</h3>
+                <p>Podemos actualizar esta política periódicamente. Le notificaremos cambios significativos por correo electrónico o mediante un aviso en la plataforma.</p>
+                
+                <h3>10. Contacto</h3>
+                <p>Para ejercer sus derechos o realizar consultas sobre privacidad, contáctenos a través de la sección de contacto de nuestra plataforma.</p>
+            </div>
+            <div class="legal-modal-footer">
+                <button class="btn-primary" onclick="closeModal('privacy-modal')">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estilos para los modales legales -->
+    <style>
+        .legal-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .legal-modal.active {
+            display: flex;
+        }
+        
+        .legal-modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .legal-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .legal-modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #1a1a2e;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        
+        .modal-close:hover {
+            color: #DC143C;
+        }
+        
+        .legal-modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            color: #444;
+            line-height: 1.7;
+        }
+        
+        .legal-modal-body .last-updated {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .legal-modal-body h3 {
+            color: #0066FF;
+            font-size: 1.1rem;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        
+        .legal-modal-body h3:first-of-type {
+            margin-top: 0;
+        }
+        
+        .legal-modal-body p {
+            margin-bottom: 12px;
+        }
+        
+        .legal-modal-body ul {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+        
+        .legal-modal-body li {
+            margin-bottom: 8px;
+        }
+        
+        .legal-modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .legal-modal-footer .btn-primary {
+            padding: 12px 32px;
+            font-size: 1rem;
+        }
+    </style>
 </body>
 </html>

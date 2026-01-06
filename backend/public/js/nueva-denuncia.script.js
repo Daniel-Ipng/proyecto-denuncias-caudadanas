@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const denunciaForm = document.getElementById('denunciaForm');
     const titleInput = document.getElementById('title');
     const descriptionInput = document.getElementById('description');
+    const placaInput = document.getElementById('placa');
     const categorySelect = document.getElementById('category');
     const photoInput = document.getElementById('photo');
     const photoPreview = document.getElementById('photoPreview');
@@ -338,6 +339,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             formData.append('folio', folio);
             formData.append('titulo', titleInput.value.trim());
             formData.append('descripcion', descriptionInput.value.trim());
+            formData.append('placa', placaInput.value.trim());
             formData.append('id_categoria', categorySelect.value);
             formData.append('latitud', selectedLat);
             formData.append('longitud', selectedLng);

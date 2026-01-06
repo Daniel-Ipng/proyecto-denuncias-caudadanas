@@ -112,6 +112,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     </div>
                     <h3 class="card-title">${denuncia.titulo}</h3>
                     <p class="card-description">${denuncia.descripcion}</p>
+                    ${denuncia.placa ? `
+                    <div class="card-placa" style="display:flex;align-items:center;gap:6px;margin:8px 0;padding:6px 10px;background:#fef2f2;border-radius:6px;width:fit-content;">
+                        <span style="color:#dc2626;font-weight:700;">🚗 ${denuncia.placa}</span>
+                    </div>
+                    ` : ''}
                     <div class="card-location">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                         <span>${denuncia.categoria}</span>
@@ -218,6 +223,18 @@ document.addEventListener('DOMContentLoaded', async () => {
             detailCategoria.textContent = detalle.categoria || '-';
             detailEstado.textContent = (detalle.estado || '-').replace('_', ' ');
 
+            // Placa (si existe)
+            const detailPlaca = document.getElementById('detailPlaca');
+            const placaContainer = document.getElementById('placaContainer');
+            if (detailPlaca && placaContainer) {
+                if (detalle.placa) {
+                    detailPlaca.textContent = detalle.placa;
+                    placaContainer.style.display = 'block';
+                } else {
+                    placaContainer.style.display = 'none';
+                }
+            }
+
             if (detalle.latitud && detalle.longitud) {
                 detailUbicacion.textContent = `${parseFloat(detalle.latitud).toFixed(4)}, ${parseFloat(detalle.longitud).toFixed(4)}`;
             } else {
@@ -304,5 +321,69 @@ document.addEventListener('DOMContentLoaded', async () => {
         commentsList.innerHTML = '';
         commentInput.value = '';
         // (map cleanup reverted)
+    }
+
+    // ========== BÚSQUEDA POR PLACA ==========
+    const searchPlacaInput = document.getElementById('searchPlacaInput');
+    const searchPlacaBtn = document.getElementById('searchPlacaBtn');
+    const clearPlacaBtn = document.getElementById('clearPlacaBtn');
+    let originalDenuncias = [];
+    let isSearchingPlaca = false;
+
+    if (searchPlacaInput && searchPlacaBtn) {
+        const searchByPlaca = async () => {
+            const placa = searchPlacaInput.value.trim();
+            if (!placa) {
+                alert('Ingresa una placa para buscar');
+                return;
+            }
+            
+            try {
+                const token = getToken();
+                const response = await fetch(`${window.location.origin}/api/denuncias/buscar-placa?placa=${encodeURIComponent(placa)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) throw new Error('Error en la búsqueda');
+                
+                const results = await response.json();
+                
+                if (!isSearchingPlaca) {
+                    originalDenuncias = [...allDenuncias];
+                }
+                
+                isSearchingPlaca = true;
+                allDenuncias = results;
+                updateFilterCounts();
+                renderDenuncias();
+                
+                clearPlacaBtn.classList.add('visible');
+                
+                if (results.length === 0) {
+                    alert(`No se encontraron denuncias con placa "${placa.toUpperCase()}"`);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al buscar por placa');
+            }
+        };
+        
+        const clearPlacaSearch = () => {
+            searchPlacaInput.value = '';
+            clearPlacaBtn.classList.remove('visible');
+            
+            if (isSearchingPlaca && originalDenuncias.length > 0) {
+                allDenuncias = [...originalDenuncias];
+                isSearchingPlaca = false;
+                updateFilterCounts();
+                renderDenuncias();
+            }
+        };
+        
+        searchPlacaBtn.addEventListener('click', searchByPlaca);
+        searchPlacaInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchByPlaca();
+        });
+        clearPlacaBtn.addEventListener('click', clearPlacaSearch);
     }
 });

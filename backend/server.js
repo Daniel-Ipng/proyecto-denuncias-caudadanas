@@ -10,6 +10,7 @@ if (process.env.NODE_ENV !== 'production') {
 const authRoutes = require('./src/routes/auth');
 const denunciaRoutes = require('./src/routes/denuncias');
 const usuarioRoutes = require('./src/routes/usuarios');
+const reniecRoutes = require('./src/routes/reniec');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -27,6 +28,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api/auth', authRoutes);
 app.use('/api/denuncias', denunciaRoutes);
 app.use('/api/usuarios', usuarioRoutes);
+app.use('/api/reniec', reniecRoutes);
 
 // Start
 app.listen(PORT, '0.0.0.0', () => {

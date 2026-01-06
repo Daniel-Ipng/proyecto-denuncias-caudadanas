@@ -256,6 +256,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
+    // Variable para el gráfico
+    let statusChart = null;
+
     const loadStats = async () => {
         if (isGuest) {
             // Mostrar estadísticas de demostración para invitados
@@ -269,14 +272,86 @@ document.addEventListener('DOMContentLoaded', async () => {
         try {
             const stats = await apiCall('/estadisticas');
             if (stats) {
-                totalDenunciasEl.textContent = stats.total || 0;
-                pendientesEl.textContent = stats.pendientes || 0;
-                enProcesoEl.textContent = stats.en_progreso || 0;
-                resueltasEl.textContent = stats.resueltas || 0;
+                const total = stats.total || 0;
+                const pendientes = stats.pendientes || 0;
+                const enProgreso = stats.en_progreso || 0;
+                const resueltas = stats.resueltas || 0;
+                const rechazadas = stats.rechazadas || 0;
+
+                totalDenunciasEl.textContent = total;
+                pendientesEl.textContent = pendientes;
+                enProcesoEl.textContent = enProgreso;
+                resueltasEl.textContent = resueltas;
+
+                // Mostrar y renderizar el gráfico si hay denuncias
+                if (total > 0) {
+                    renderStatusChart(pendientes, enProgreso, resueltas, rechazadas, total);
+                }
             }
         } catch (error) {
             console.error('Error al cargar estadísticas:', error);
         }
+    };
+
+    // Renderizar gráfico de estados
+    const renderStatusChart = (pendientes, enProgreso, resueltas, rechazadas, total) => {
+        const summaryRow = document.getElementById('summary-row');
+        const chartCanvas = document.getElementById('statusChart');
+        
+        if (!summaryRow || !chartCanvas) return;
+        
+        // Mostrar la sección
+        summaryRow.style.display = 'grid';
+
+        // Actualizar leyenda
+        document.getElementById('chart-total').textContent = total;
+        document.getElementById('legend-pending').textContent = pendientes;
+        document.getElementById('legend-progress').textContent = enProgreso;
+        document.getElementById('legend-resolved').textContent = resueltas;
+        document.getElementById('legend-rejected').textContent = rechazadas;
+
+        // Calcular tasa de resolución
+        const tasaResolucion = total > 0 ? Math.round((resueltas / total) * 100) : 0;
+        document.getElementById('resolution-rate').textContent = `${tasaResolucion}%`;
+
+        // Destruir gráfico anterior si existe
+        if (statusChart) {
+            statusChart.destroy();
+        }
+
+        // Crear gráfico
+        const ctx = chartCanvas.getContext('2d');
+        statusChart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Pendientes', 'En Proceso', 'Resueltas', 'Rechazadas'],
+                datasets: [{
+                    data: [pendientes, enProgreso, resueltas, rechazadas],
+                    backgroundColor: ['#f59e0b', '#8b5cf6', '#10b981', '#ef4444'],
+                    borderWidth: 0,
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const value = context.raw;
+                                const percentage = total > 0 ? Math.round((value / total) * 100) : 0;
+                                return `${context.label}: ${value} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
     };
 
     // --- Funciones de Renderizado ---

@@ -5,7 +5,76 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Reporte Urbano</title>
     <link rel="stylesheet" href="../css/dashboard-style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+        /* Sección de resumen con gráfico */
+        .summary-row {
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 900px) {
+            .summary-row {
+                grid-template-columns: 1fr;
+            }
+        }
+        .chart-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .chart-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-wrapper {
+            position: relative;
+            height: 180px;
+        }
+        .chart-center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            pointer-events: none;
+        }
+        .chart-center-number {
+            font-size: 32px;
+            font-weight: 800;
+            color: #1f2937;
+        }
+        .chart-center-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 16px;
+            justify-content: center;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: #4b5563;
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
         .modal-overlay {
             position: fixed;
             inset: 0;
@@ -193,10 +262,10 @@
 <body>
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="logo">
+        <a href="../index.html" class="logo" style="text-decoration:none;">
             <div class="logo-icon"></div>
             <span>Reporte Urbano</span>
-        </div>
+        </a>
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item active">
@@ -332,6 +401,46 @@
                 </div>
             </div>
         </section>
+
+        <!-- Resumen con Gráfico -->
+        <div class="summary-row" id="summary-row" style="display: none;">
+            <div class="chart-card">
+                <h3>📊 Estado de Mis Denuncias</h3>
+                <div style="display: flex; align-items: center; gap: 24px;">
+                    <div class="chart-wrapper" style="width: 180px; height: 180px; position: relative;">
+                        <canvas id="statusChart"></canvas>
+                        <div class="chart-center-text">
+                            <div class="chart-center-number" id="chart-total">0</div>
+                            <div class="chart-center-label">Total</div>
+                        </div>
+                    </div>
+                    <div class="chart-legend" style="flex-direction: column; align-items: flex-start;">
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #f59e0b;"></div>
+                            <span>Pendientes: <strong id="legend-pending">0</strong></span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #8b5cf6;"></div>
+                            <span>En Proceso: <strong id="legend-progress">0</strong></span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #10b981;"></div>
+                            <span>Resueltas: <strong id="legend-resolved">0</strong></span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot" style="background: #ef4444;"></div>
+                            <span>Rechazadas: <strong id="legend-rejected">0</strong></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-card" style="display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <div style="font-size: 48px; margin-bottom: 8px;">🎯</div>
+                <div style="font-size: 32px; font-weight: 800; color: #10b981;" id="resolution-rate">0%</div>
+                <div style="font-size: 14px; color: #6b7280;">Tasa de Resolución</div>
+                <div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">de tus denuncias</div>
+            </div>
+        </div>
 
         <!-- Action Button -->
         <section class="action-section">

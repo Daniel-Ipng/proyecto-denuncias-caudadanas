@@ -234,10 +234,10 @@
 <body>
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="logo">
+        <a href="../index.html" class="logo" style="text-decoration:none;">
             <div class="logo-icon"></div>
             <span>Reporte Urbano</span>
-        </div>
+        </a>
         
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
@@ -356,13 +356,18 @@
     <script src="../js/user-profile.js"></script>
     <script src="../js/dashboard-nav.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const isGuest = !localStorage.getItem('token');
+        document.addEventListener('DOMContentLoaded', async () => {
+            const API_URL = window.location.origin + '/api';
+            const token = localStorage.getItem('token');
             const container = document.getElementById('notifications-container');
             const notificationsList = document.getElementById('notifications-list');
+            
+            let notifications = [];
+            let notificacionesLeidas = JSON.parse(localStorage.getItem('notificacionesLeidasCiudadano') || '[]');
+            let currentFilter = 'all';
 
             // Modo invitado
-            if (isGuest) {
+            if (!token) {
                 container.innerHTML = `
                     <div class="guest-message">
                         <div class="guest-message-content">
@@ -380,66 +385,110 @@
                 return;
             }
 
-            // Datos de ejemplo de notificaciones (en producción vendrían del backend)
-            const notifications = [
-                {
-                    id: 1,
-                    type: 'resolved',
-                    title: 'Denuncia resuelta',
-                    message: 'Tu denuncia sobre "Bache en Av. Principal" ha sido marcada como resuelta por la autoridad.',
-                    denuncia: 'Bache en Av. Principal',
-                    estado: 'resuelto',
-                    time: '2024-12-30T10:30:00',
-                    read: false
-                },
-                {
-                    id: 2,
-                    type: 'comment',
-                    title: 'Nuevo comentario',
-                    message: 'La autoridad ha dejado un comentario en tu denuncia: "Estamos coordinando con el equipo de mantenimiento..."',
-                    denuncia: 'Luminaria dañada en Calle 5',
-                    estado: 'en-progreso',
-                    time: '2024-12-29T15:45:00',
-                    read: false
-                },
-                {
-                    id: 3,
-                    type: 'status-change',
-                    title: 'Cambio de estado',
-                    message: 'Tu denuncia "Acumulación de basura" cambió de estado a "En Proceso".',
-                    denuncia: 'Acumulación de basura',
-                    estado: 'en-progreso',
-                    time: '2024-12-28T09:20:00',
-                    read: true
-                },
-                {
-                    id: 4,
-                    type: 'status-change',
-                    title: 'Denuncia recibida',
-                    message: 'Tu denuncia "Semáforo averiado" ha sido recibida y está pendiente de revisión.',
-                    denuncia: 'Semáforo averiado',
-                    estado: 'pendiente',
-                    time: '2024-12-27T14:10:00',
-                    read: true
-                },
-                {
-                    id: 5,
-                    type: 'resolved',
-                    title: 'Denuncia resuelta',
-                    message: 'Tu denuncia sobre "Fuga de agua" ha sido atendida y resuelta satisfactoriamente.',
-                    denuncia: 'Fuga de agua',
-                    estado: 'resuelto',
-                    time: '2024-12-25T11:00:00',
-                    read: true
-                }
-            ];
+            // Mostrar estado de carga
+            notificationsList.innerHTML = `
+                <div class="loading-state" style="text-align: center; padding: 60px 20px; color: #6b7280;">
+                    <div style="border: 3px solid #e5e7eb; border-top: 3px solid #2563eb; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 16px;"></div>
+                    <p>Cargando notificaciones...</p>
+                </div>
+                <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+            `;
 
-            let currentFilter = 'all';
+            // Cargar denuncias del usuario
+            async function cargarDenuncias() {
+                try {
+                    const response = await fetch(`${API_URL}/denuncias/mis-denuncias`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    if (response.ok) {
+                        const denuncias = await response.json();
+                        generarNotificaciones(denuncias);
+                    } else {
+                        mostrarError('Error al cargar notificaciones');
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    mostrarError('Error de conexión');
+                }
+            }
+
+            // Generar notificaciones desde las denuncias
+            function generarNotificaciones(denuncias) {
+                notifications = [];
+                const ahora = new Date();
+
+                denuncias.forEach(denuncia => {
+                    const fechaCreacion = new Date(denuncia.fecha_creacion);
+                    const diasDesdeCreacion = Math.floor((ahora - fechaCreacion) / (1000 * 60 * 60 * 24));
+
+                    // Notificación cuando la denuncia fue creada (últimas 24h)
+                    if (diasDesdeCreacion === 0) {
+                        notifications.push({
+                            id: `created-${denuncia.id}`,
+                            denunciaId: denuncia.id,
+                            type: 'status-change',
+                            title: 'Denuncia recibida',
+                            message: `Tu denuncia "${denuncia.titulo}" ha sido registrada y está pendiente de revisión.`,
+                            denuncia: denuncia.titulo,
+                            estado: 'pendiente',
+                            time: denuncia.fecha_creacion,
+                            read: notificacionesLeidas.includes(`created-${denuncia.id}`)
+                        });
+                    }
+
+                    // Notificación de cambio de estado
+                    if (denuncia.fecha_actualizacion && denuncia.fecha_actualizacion !== denuncia.fecha_creacion) {
+                        const fechaActualizacion = new Date(denuncia.fecha_actualizacion);
+                        const horasDesdeActualizacion = Math.floor((ahora - fechaActualizacion) / (1000 * 60 * 60));
+
+                        if (horasDesdeActualizacion < 168) { // Última semana
+                            let title, message, type;
+                            
+                            if (denuncia.estado === 'resuelto') {
+                                type = 'resolved';
+                                title = 'Denuncia resuelta';
+                                message = `Tu denuncia "${denuncia.titulo}" ha sido marcada como resuelta.`;
+                            } else if (denuncia.estado === 'en_progreso') {
+                                type = 'status-change';
+                                title = 'Denuncia en proceso';
+                                message = `Tu denuncia "${denuncia.titulo}" está siendo atendida.`;
+                            } else if (denuncia.estado === 'rechazado') {
+                                type = 'status-change';
+                                title = 'Denuncia rechazada';
+                                message = `Tu denuncia "${denuncia.titulo}" ha sido rechazada.`;
+                            }
+
+                            if (title) {
+                                notifications.push({
+                                    id: `update-${denuncia.id}-${denuncia.estado}`,
+                                    denunciaId: denuncia.id,
+                                    type: type,
+                                    title: title,
+                                    message: message,
+                                    denuncia: denuncia.titulo,
+                                    estado: denuncia.estado === 'en_progreso' ? 'en-progreso' : denuncia.estado,
+                                    time: denuncia.fecha_actualizacion,
+                                    read: notificacionesLeidas.includes(`update-${denuncia.id}-${denuncia.estado}`)
+                                });
+                            }
+                        }
+                    }
+                });
+
+                // Ordenar por fecha (más recientes primero)
+                notifications.sort((a, b) => new Date(b.time) - new Date(a.time));
+                
+                updateCounts();
+                renderNotifications();
+            }
 
             // Actualizar contadores
             function updateCounts() {
-                document.getElementById('count-all').textContent = notifications.length;
-                document.getElementById('count-unread').textContent = notifications.filter(n => !n.read).length;
+                const countAll = document.getElementById('count-all');
+                const countUnread = document.getElementById('count-unread');
+                if (countAll) countAll.textContent = notifications.length;
+                if (countUnread) countUnread.textContent = notifications.filter(n => !n.read).length;
             }
 
             // Formatear tiempo relativo
@@ -451,6 +500,7 @@
                 const diffHours = Math.floor(diffMs / 3600000);
                 const diffDays = Math.floor(diffMs / 86400000);
 
+                if (diffMins < 1) return 'Justo ahora';
                 if (diffMins < 60) return `Hace ${diffMins} min`;
                 if (diffHours < 24) return `Hace ${diffHours} hora${diffHours > 1 ? 's' : ''}`;
                 if (diffDays < 7) return `Hace ${diffDays} día${diffDays > 1 ? 's' : ''}`;
@@ -495,7 +545,7 @@
                 }
 
                 notificationsList.innerHTML = filtered.map(n => `
-                    <div class="notification-card ${n.read ? '' : 'unread'}" data-id="${n.id}">
+                    <div class="notification-card ${n.read ? '' : 'unread'}" data-id="${n.id}" data-denuncia-id="${n.denunciaId}">
                         <div class="notification-icon ${n.type}">
                             ${getIcon(n.type)}
                         </div>
@@ -510,12 +560,12 @@
                                     </svg>
                                     ${formatTimeAgo(n.time)}
                                 </span>
-                                <span class="notification-badge ${n.estado}">${n.estado === 'en-progreso' ? 'En Proceso' : n.estado === 'resuelto' ? 'Resuelto' : 'Pendiente'}</span>
+                                <span class="notification-badge ${n.estado}">${n.estado === 'en-progreso' ? 'En Proceso' : n.estado === 'resuelto' ? 'Resuelto' : n.estado === 'rechazado' ? 'Rechazado' : 'Pendiente'}</span>
                             </div>
                         </div>
                         <div class="notification-actions">
                             ${!n.read ? '<div class="unread-dot"></div>' : ''}
-                            <button class="btn-view" onclick="viewDenuncia(${n.id})">Ver</button>
+                            <button class="btn-view" onclick="viewDenuncia('${n.id}')">Ver</button>
                         </div>
                     </div>
                 `).join('');
@@ -524,15 +574,39 @@
                 document.querySelectorAll('.notification-card').forEach(card => {
                     card.addEventListener('click', (e) => {
                         if (e.target.closest('.btn-view')) return;
-                        const id = parseInt(card.dataset.id);
-                        const notif = notifications.find(n => n.id === id);
-                        if (notif && !notif.read) {
-                            notif.read = true;
-                            renderNotifications();
-                            updateCounts();
-                        }
+                        const id = card.dataset.id;
+                        marcarComoLeida(id);
                     });
                 });
+            }
+
+            // Marcar notificación como leída
+            function marcarComoLeida(notifId) {
+                const notif = notifications.find(n => n.id === notifId);
+                if (notif && !notif.read) {
+                    notif.read = true;
+                    if (!notificacionesLeidas.includes(notifId)) {
+                        notificacionesLeidas.push(notifId);
+                        localStorage.setItem('notificacionesLeidasCiudadano', JSON.stringify(notificacionesLeidas));
+                    }
+                    renderNotifications();
+                    updateCounts();
+                }
+            }
+
+            // Mostrar error
+            function mostrarError(mensaje) {
+                notificationsList.innerHTML = `
+                    <div class="empty-state">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="1.5">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                        <h3>Error</h3>
+                        <p>${mensaje}</p>
+                    </div>
+                `;
             }
 
             // Filtros
@@ -547,13 +621,20 @@
 
             // Marcar todas como leídas
             document.getElementById('markAllRead').addEventListener('click', () => {
-                notifications.forEach(n => n.read = true);
+                notifications.forEach(n => {
+                    n.read = true;
+                    if (!notificacionesLeidas.includes(n.id)) {
+                        notificacionesLeidas.push(n.id);
+                    }
+                });
+                localStorage.setItem('notificacionesLeidasCiudadano', JSON.stringify(notificacionesLeidas));
                 renderNotifications();
                 updateCounts();
             });
 
             // Ver denuncia
-            window.viewDenuncia = (id) => {
+            window.viewDenuncia = (notifId) => {
+                marcarComoLeida(notifId);
                 window.location.href = 'mis-denuncias.html';
             };
 
@@ -564,9 +645,8 @@
                 window.location.href = '../login.html';
             });
 
-            // Inicializar
-            updateCounts();
-            renderNotifications();
+            // Cargar datos
+            await cargarDenuncias();
         });
     </script>
 </body>

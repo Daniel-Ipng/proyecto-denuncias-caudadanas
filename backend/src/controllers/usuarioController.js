@@ -1,63 +1,36 @@
-const db = require('../config/db');
+const { Usuario, Denuncia } = require('../models');
 
 // Obtener todos los usuarios con estadísticas
-exports.obtenerTodosUsuarios = (req, res) => {
-    const query = `
-        SELECT 
-            u.id, u.nombre, u.apellido, u.dni, u.email, u.rol, u.fecha_creacion,
-            COUNT(DISTINCT d.id) as total_denuncias,
-            SUM(CASE WHEN d.estado = 'resuelto' THEN 1 ELSE 0 END) as denuncias_resueltas,
-            SUM(CASE WHEN d.estado = 'recibido' THEN 1 ELSE 0 END) as denuncias_pendientes
-        FROM usuarios u
-        LEFT JOIN denuncias d ON u.id = d.id_usuario
-        GROUP BY u.id
-        ORDER BY u.fecha_creacion DESC
-    `;
-
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error al obtener usuarios:', err);
-            return res.status(500).json({ message: 'Error del servidor al obtener usuarios.' });
-        }
-        res.json(results);
-    });
+exports.obtenerTodosUsuarios = async (req, res) => {
+    try {
+        const usuarios = await Usuario.findAllWithStats();
+        res.json(usuarios);
+    } catch (err) {
+        console.error('Error al obtener usuarios:', err);
+        res.status(500).json({ message: 'Error del servidor al obtener usuarios.' });
+    }
 };
 
 // Obtener detalles de un usuario específico
-exports.obtenerDetalleUsuario = (req, res) => {
+exports.obtenerDetalleUsuario = async (req, res) => {
     const { id } = req.params;
 
-    const query = `
-        SELECT 
-            u.id, u.nombre, u.apellido, u.dni, u.email, u.rol, u.fecha_creacion,
-            COUNT(DISTINCT d.id) as total_denuncias,
-            SUM(CASE WHEN d.estado = 'resuelto' THEN 1 ELSE 0 END) as denuncias_resueltas,
-            SUM(CASE WHEN d.estado = 'en_progreso' THEN 1 ELSE 0 END) as denuncias_en_progreso,
-            SUM(CASE WHEN d.estado = 'recibido' THEN 1 ELSE 0 END) as denuncias_pendientes,
-            COUNT(DISTINCT c.id) as total_comentarios
-        FROM usuarios u
-        LEFT JOIN denuncias d ON u.id = d.id_usuario
-        LEFT JOIN comentarios_seguimiento c ON u.id = c.id_usuario
-        WHERE u.id = ?
-        GROUP BY u.id
-    `;
-
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            console.error('Error al obtener detalle de usuario:', err);
-            return res.status(500).json({ message: 'Error del servidor al obtener el detalle.' });
-        }
+    try {
+        const usuario = await Usuario.findByIdWithStats(id);
         
-        if (results.length === 0) {
+        if (!usuario) {
             return res.status(404).json({ message: 'Usuario no encontrado.' });
         }
         
-        res.json(results[0]);
-    });
+        res.json(usuario);
+    } catch (err) {
+        console.error('Error al obtener detalle de usuario:', err);
+        res.status(500).json({ message: 'Error del servidor al obtener el detalle.' });
+    }
 };
 
 // Actualizar rol de usuario
-exports.actualizarRolUsuario = (req, res) => {
+exports.actualizarRolUsuario = async (req, res) => {
     const { id } = req.params;
     const { rol } = req.body;
 
@@ -71,102 +44,55 @@ exports.actualizarRolUsuario = (req, res) => {
         return res.status(403).json({ message: 'No puedes cambiar tu propio rol.' });
     }
 
-    const query = 'UPDATE usuarios SET rol = ? WHERE id = ?';
+    try {
+        const actualizado = await Usuario.updateRol(id, rol);
 
-    db.query(query, [rol, id], (err, result) => {
-        if (err) {
-            console.error('Error al actualizar rol:', err);
-            return res.status(500).json({ message: 'Error del servidor al actualizar el rol.' });
-        }
-
-        if (result.affectedRows === 0) {
+        if (!actualizado) {
             return res.status(404).json({ message: 'Usuario no encontrado.' });
         }
 
         res.json({ message: 'Rol actualizado exitosamente.', rol });
-    });
+    } catch (err) {
+        console.error('Error al actualizar rol:', err);
+        res.status(500).json({ message: 'Error del servidor al actualizar el rol.' });
+    }
 };
 
 // Obtener estadísticas generales de usuarios
-exports.obtenerEstadisticasGenerales = (req, res) => {
-    const query = `
-        SELECT 
-            COUNT(*) as total_usuarios,
-            SUM(CASE WHEN rol = 'ciudadano' THEN 1 ELSE 0 END) as total_ciudadanos,
-            SUM(CASE WHEN rol = 'autoridad' THEN 1 ELSE 0 END) as total_autoridades,
-            SUM(CASE WHEN fecha_creacion >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1 ELSE 0 END) as nuevos_mes
-        FROM usuarios
-    `;
-
-    db.query(query, (err, results) => {
-        if (err) {
-            console.error('Error al obtener estadísticas:', err);
-            return res.status(500).json({ message: 'Error del servidor al obtener estadísticas.' });
-        }
-        res.json(results[0]);
-    });
+exports.obtenerEstadisticasGenerales = async (req, res) => {
+    try {
+        const estadisticas = await Usuario.getEstadisticasGenerales();
+        res.json(estadisticas);
+    } catch (err) {
+        console.error('Error al obtener estadísticas:', err);
+        res.status(500).json({ message: 'Error del servidor al obtener estadísticas.' });
+    }
 };
 
 // Obtener denuncias de un usuario específico
-exports.obtenerDenunciasUsuario = (req, res) => {
+exports.obtenerDenunciasUsuario = async (req, res) => {
     const { id } = req.params;
 
-    const query = `
-        SELECT 
-            d.id, d.folio, d.titulo, d.descripcion, d.estado, d.fecha_creacion,
-            d.latitud, d.longitud,
-            c.nombre AS categoria,
-            (SELECT url_imagen FROM imagenes_denuncia WHERE id_denuncia = d.id LIMIT 1) AS imagen_url
-        FROM denuncias d
-        JOIN categorias c ON d.id_categoria = c.id
-        WHERE d.id_usuario = ?
-        ORDER BY d.fecha_creacion DESC
-    `;
-
-    db.query(query, [id], (err, results) => {
-        if (err) {
-            console.error('Error al obtener denuncias del usuario:', err);
-            return res.status(500).json({ message: 'Error del servidor al obtener las denuncias.' });
-        }
-        res.json(results);
-    });
+    try {
+        const denuncias = await Denuncia.findByUsuario(id);
+        res.json(denuncias);
+    } catch (err) {
+        console.error('Error al obtener denuncias del usuario:', err);
+        res.status(500).json({ message: 'Error del servidor al obtener las denuncias.' });
+    }
 };
 
 // Buscar usuarios
-exports.buscarUsuarios = (req, res) => {
+exports.buscarUsuarios = async (req, res) => {
     const { q, rol } = req.query;
     
-    let query = `
-        SELECT 
-            u.id, u.nombre, u.apellido, u.dni, u.email, u.rol, u.fecha_creacion,
-            COUNT(DISTINCT d.id) as total_denuncias
-        FROM usuarios u
-        LEFT JOIN denuncias d ON u.id = d.id_usuario
-        WHERE 1=1
-    `;
-    
-    const params = [];
-
-    if (q) {
-        query += ` AND (u.nombre LIKE ? OR u.apellido LIKE ? OR u.email LIKE ? OR u.dni LIKE ?)`;
-        const searchTerm = `%${q}%`;
-        params.push(searchTerm, searchTerm, searchTerm, searchTerm);
+    try {
+        const usuarios = await Usuario.search(q, rol);
+        res.json(usuarios);
+    } catch (err) {
+        console.error('Error al buscar usuarios:', err);
+        res.status(500).json({ message: 'Error del servidor al buscar usuarios.' });
     }
-
-    if (rol && ['ciudadano', 'autoridad'].includes(rol)) {
-        query += ` AND u.rol = ?`;
-        params.push(rol);
-    }
-
-    query += ` GROUP BY u.id ORDER BY u.fecha_creacion DESC`;
-
-    db.query(query, params, (err, results) => {
-        if (err) {
-            console.error('Error al buscar usuarios:', err);
-            return res.status(500).json({ message: 'Error del servidor al buscar usuarios.' });
-        }
-        res.json(results);
-    });
 };
 
 module.exports = exports;

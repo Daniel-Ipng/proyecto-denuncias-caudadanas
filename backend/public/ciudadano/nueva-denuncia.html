@@ -11,10 +11,10 @@
 <body>
     <!-- Sidebar (copiado del dashboard para consistencia) -->
     <aside class="sidebar">
-        <div class="logo">
+        <a href="../index.html" class="logo" style="text-decoration:none;">
             <div class="logo-icon"></div>
             <span>Reporte Urbano</span>
-        </div>
+        </a>
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -102,6 +102,12 @@
                 <div class="form-row">
                     <label for="description">Descripción detallada</label>
                     <textarea id="description" name="description" rows="5" required></textarea>
+                </div>
+
+                <div class="form-row">
+                    <label for="placa">Placa del vehículo <span style="color:#9ca3af;font-weight:400;">(opcional)</span></label>
+                    <input type="text" id="placa" name="placa" placeholder="Ej: P123ABC" maxlength="20" style="text-transform:uppercase;">
+                    <small style="color:#6b7280;font-size:12px;">Si la denuncia involucra un vehículo, ingresa la placa</small>
                 </div>
 
                 <div class="form-row">

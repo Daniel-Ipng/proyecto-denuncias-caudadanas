@@ -10,10 +10,10 @@
     <div class="auth-container">
         <!-- Lado Izquierdo - Imagen/Info -->
         <div class="auth-left">
-            <div class="logo">
+            <a href="index.html" class="logo" style="text-decoration:none;">
                 <div class="logo-icon"></div>
                 <span>Reporte Urbano</span>
-            </div>
+            </a>
             <div class="auth-info">
                 <h1 class="fade-in-up">Únete a nuestra comunidad</h1>
                 <p class="fade-in-up delay-1">Crea tu cuenta y comienza a reportar problemas urbanos para mejorar tu ciudad.</p>
@@ -33,24 +33,35 @@
 
                 <!-- Formulario de Registro -->
                 <form class="auth-form" id="register-form">
-                    <!-- Nombres y Apellidos separados para la BD -->
+                    <!-- DNI con botón de consulta RENIEC -->
                     <div class="form-group fade-in-up delay-2">
-                        <label for="nombre">Nombres</label>
-                        <input type="text" id="nombre" placeholder="Juan" required>
+                        <label for="dni">DNI</label>
+                        <div class="dni-input-group">
+                            <input type="text" id="dni" placeholder="12345678" maxlength="8" pattern="\d{8}" required>
+                            <button type="button" id="btn-consultar-dni" class="btn-consultar-dni" title="Consultar en RENIEC">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="11" cy="11" r="8"></circle>
+                                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                </svg>
+                                <span>Consultar</span>
+                            </button>
+                        </div>
+                        <small class="dni-status" id="dni-status"></small>
                     </div>
-                    <div class="form-group fade-in-up delay-2">
+
+                    <!-- Nombres y Apellidos (autocompletados por RENIEC) -->
+                    <div class="form-group fade-in-up delay-3">
+                        <label for="nombre">Nombres</label>
+                        <input type="text" id="nombre" placeholder="Juan Carlos" required>
+                    </div>
+                    <div class="form-group fade-in-up delay-3">
                         <label for="apellido">Apellidos</label>
                         <input type="text" id="apellido" placeholder="Pérez García" required>
                     </div>
 
-                    <div class="form-group fade-in-up delay-3">
+                    <div class="form-group fade-in-up delay-4">
                         <label for="email">Correo Electrónico</label>
                         <input type="email" id="email" placeholder="tu@email.com" required>
-                    </div>
-
-                    <div class="form-group fade-in-up delay-4">
-                        <label for="dni">DNI</label>
-                        <input type="text" id="dni" placeholder="12345678" required>
                     </div>
 
                     <div class="form-group fade-in-up delay-5">
@@ -79,7 +90,7 @@
                     <div class="form-group fade-in-up delay-7">
                         <label class="checkbox-label">
                             <input type="checkbox" id="terms-checkbox" required>
-                            <span>Acepto los <a href="#">Términos y Condiciones</a> y la <a href="#">Política de Privacidad</a></span>
+                            <span>Acepto los <a href="#" onclick="openModal('terms-modal'); return false;">Términos y Condiciones</a> y la <a href="#" onclick="openModal('privacy-modal'); return false;">Política de Privacidad</a></span>
                         </label>
                     </div>
 
@@ -99,8 +110,479 @@
         </div>
     </div>
 
+    <style>
+        /* Estilos para consulta RENIEC */
+        .dni-input-group {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .dni-input-group input {
+            flex: 1;
+        }
+        
+        .btn-consultar-dni {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .btn-consultar-dni:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+        }
+        
+        .btn-consultar-dni:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .btn-consultar-dni.loading {
+            pointer-events: none;
+        }
+        
+        .btn-consultar-dni.loading span {
+            display: none;
+        }
+        
+        .btn-consultar-dni.loading::after {
+            content: 'Buscando...';
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .dni-status {
+            display: block;
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .dni-status.success {
+            color: #059669;
+        }
+        
+        .dni-status.error {
+            color: #dc2626;
+        }
+        
+        .dni-status.warning {
+            color: #d97706;
+        }
+        
+        /* Indicador de campo autocompletado */
+        input.autocompleted {
+            background: #f0fdf4 !important;
+            border-color: #22c55e !important;
+        }
+        
+        input.autocompleted::placeholder {
+            color: #16a34a;
+        }
+    </style>
+
     <!-- Importamos el script al final del body -->
     <script type="module" src="js/auth.js"></script>
+    
+    <!-- Script para consulta RENIEC -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const dniInput = document.getElementById('dni');
+            const btnConsultar = document.getElementById('btn-consultar-dni');
+            const dniStatus = document.getElementById('dni-status');
+            const nombreInput = document.getElementById('nombre');
+            const apellidoInput = document.getElementById('apellido');
+            
+            // Solo permitir números en el DNI
+            dniInput.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '').slice(0, 8);
+                dniStatus.textContent = '';
+                dniStatus.className = 'dni-status';
+            });
+            
+            // Consultar RENIEC al hacer click
+            btnConsultar.addEventListener('click', consultarRENIEC);
+            
+            // También consultar al presionar Enter en el campo DNI
+            dniInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    consultarRENIEC();
+                }
+            });
+            
+            async function consultarRENIEC() {
+                const dni = dniInput.value.trim();
+                
+                // Validar formato
+                if (dni.length !== 8) {
+                    dniStatus.textContent = '⚠️ El DNI debe tener 8 dígitos';
+                    dniStatus.className = 'dni-status warning';
+                    return;
+                }
+                
+                // Mostrar estado de carga
+                btnConsultar.classList.add('loading');
+                btnConsultar.disabled = true;
+                dniStatus.textContent = '🔍 Consultando RENIEC...';
+                dniStatus.className = 'dni-status';
+                
+                try {
+                    const response = await fetch(`/api/reniec/consultar/${dni}`);
+                    const result = await response.json();
+                    
+                    if (result.success && result.data) {
+                        // Autocompletar campos
+                        nombreInput.value = result.data.nombres;
+                        apellidoInput.value = result.data.apellidos;
+                        
+                        // Marcar como autocompletados
+                        nombreInput.classList.add('autocompleted');
+                        apellidoInput.classList.add('autocompleted');
+                        
+                        dniStatus.textContent = '✅ Datos obtenidos de RENIEC';
+                        dniStatus.className = 'dni-status success';
+                        
+                        // Enfocar el siguiente campo vacío
+                        document.getElementById('email').focus();
+                    } else {
+                        dniStatus.textContent = '❌ ' + (result.message || 'DNI no encontrado');
+                        dniStatus.className = 'dni-status error';
+                    }
+                } catch (error) {
+                    console.error('Error consultando RENIEC:', error);
+                    dniStatus.textContent = '⚠️ Error de conexión. Ingresa los datos manualmente.';
+                    dniStatus.className = 'dni-status warning';
+                } finally {
+                    btnConsultar.classList.remove('loading');
+                    btnConsultar.disabled = false;
+                }
+            }
+            
+            // Quitar clase autocompleted si el usuario edita manualmente
+            [nombreInput, apellidoInput].forEach(input => {
+                input.addEventListener('input', function() {
+                    this.classList.remove('autocompleted');
+                });
+            });
+        });
+    </script>
+
+    <!-- Modal Términos y Condiciones -->
+    <div id="terms-modal" class="legal-modal">
+        <div class="legal-modal-content">
+            <div class="legal-modal-header">
+                <h2>Términos y Condiciones</h2>
+                <button class="modal-close" onclick="closeModal('terms-modal')">&times;</button>
+            </div>
+            <div class="legal-modal-body">
+                <p class="last-updated">Última actualización: 5 de enero de 2026</p>
+                
+                <h3>1. Aceptación de los Términos</h3>
+                <p>Al acceder y utilizar la plataforma Reporte Urbano, usted acepta estar sujeto a estos Términos y Condiciones de uso. Si no está de acuerdo con alguna parte de estos términos, no podrá acceder al servicio.</p>
+                
+                <h3>2. Descripción del Servicio</h3>
+                <p>Reporte Urbano es una plataforma digital que permite a los ciudadanos reportar problemas urbanos como baches, alumbrado defectuoso, acumulación de basura, y otros inconvenientes en la vía pública para su atención por parte de las autoridades competentes.</p>
+                
+                <h3>3. Registro de Usuario</h3>
+                <p>Para utilizar el servicio, debe crear una cuenta proporcionando información veraz y actualizada. Usted es responsable de:</p>
+                <ul>
+                    <li>Mantener la confidencialidad de su contraseña</li>
+                    <li>Todas las actividades que ocurran bajo su cuenta</li>
+                    <li>Notificar inmediatamente cualquier uso no autorizado</li>
+                </ul>
+                
+                <h3>4. Uso Aceptable</h3>
+                <p>El usuario se compromete a:</p>
+                <ul>
+                    <li>Proporcionar información veraz en los reportes</li>
+                    <li>No realizar denuncias falsas o malintencionadas</li>
+                    <li>No utilizar la plataforma para fines ilegales</li>
+                    <li>No cargar contenido ofensivo, difamatorio o inapropiado</li>
+                    <li>Respetar los derechos de otros usuarios</li>
+                </ul>
+                
+                <h3>5. Contenido del Usuario</h3>
+                <p>Al enviar reportes, fotos o comentarios, usted otorga a Reporte Urbano una licencia no exclusiva para usar, reproducir y mostrar dicho contenido con fines de prestación del servicio y mejora de la comunidad.</p>
+                
+                <h3>6. Responsabilidades y Limitaciones</h3>
+                <p>Reporte Urbano actúa como intermediario entre ciudadanos y autoridades. No garantizamos:</p>
+                <ul>
+                    <li>Tiempos específicos de resolución de reportes</li>
+                    <li>Que todos los reportes serán atendidos</li>
+                    <li>La disponibilidad ininterrumpida del servicio</li>
+                </ul>
+                
+                <h3>7. Propiedad Intelectual</h3>
+                <p>Todo el contenido de la plataforma (diseño, logotipos, código) es propiedad de Reporte Urbano y está protegido por las leyes de propiedad intelectual.</p>
+                
+                <h3>8. Modificaciones</h3>
+                <p>Nos reservamos el derecho de modificar estos términos en cualquier momento. Los cambios serán efectivos inmediatamente después de su publicación.</p>
+                
+                <h3>9. Terminación</h3>
+                <p>Podemos suspender o terminar su cuenta si viola estos términos, sin previo aviso y sin responsabilidad hacia usted.</p>
+                
+                <h3>10. Contacto</h3>
+                <p>Para consultas sobre estos términos, contáctenos a través de la sección de contacto en nuestra plataforma.</p>
+            </div>
+            <div class="legal-modal-footer">
+                <button class="btn-primary" onclick="closeModal('terms-modal')">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Política de Privacidad -->
+    <div id="privacy-modal" class="legal-modal">
+        <div class="legal-modal-content">
+            <div class="legal-modal-header">
+                <h2>Política de Privacidad</h2>
+                <button class="modal-close" onclick="closeModal('privacy-modal')">&times;</button>
+            </div>
+            <div class="legal-modal-body">
+                <p class="last-updated">Última actualización: 5 de enero de 2026</p>
+                
+                <h3>1. Información que Recopilamos</h3>
+                <p>Recopilamos los siguientes tipos de información:</p>
+                <ul>
+                    <li><strong>Datos de identificación:</strong> Nombre, apellidos, DNI, correo electrónico</li>
+                    <li><strong>Datos de ubicación:</strong> Coordenadas GPS de los reportes realizados</li>
+                    <li><strong>Contenido multimedia:</strong> Fotos y videos adjuntos a los reportes</li>
+                    <li><strong>Datos de uso:</strong> Información sobre cómo utiliza la plataforma</li>
+                </ul>
+                
+                <h3>2. Uso de la Información</h3>
+                <p>Utilizamos su información para:</p>
+                <ul>
+                    <li>Procesar y gestionar sus reportes ciudadanos</li>
+                    <li>Comunicarnos con usted sobre el estado de sus denuncias</li>
+                    <li>Verificar su identidad mediante consulta a RENIEC</li>
+                    <li>Mejorar nuestros servicios y la experiencia del usuario</li>
+                    <li>Generar estadísticas anónimas sobre problemas urbanos</li>
+                </ul>
+                
+                <h3>3. Compartición de Datos</h3>
+                <p>Su información puede ser compartida con:</p>
+                <ul>
+                    <li><strong>Autoridades municipales:</strong> Para la atención de sus reportes</li>
+                    <li><strong>RENIEC:</strong> Para verificación de identidad</li>
+                    <li><strong>Proveedores de servicios:</strong> Que nos ayudan a operar la plataforma</li>
+                </ul>
+                <p>No vendemos ni alquilamos su información personal a terceros.</p>
+                
+                <h3>4. Seguridad de los Datos</h3>
+                <p>Implementamos medidas de seguridad técnicas y organizativas para proteger su información:</p>
+                <ul>
+                    <li>Cifrado de datos en tránsito y en reposo</li>
+                    <li>Acceso restringido a datos personales</li>
+                    <li>Monitoreo continuo de seguridad</li>
+                    <li>Copias de seguridad regulares</li>
+                </ul>
+                
+                <h3>5. Sus Derechos</h3>
+                <p>Usted tiene derecho a:</p>
+                <ul>
+                    <li><strong>Acceso:</strong> Solicitar una copia de sus datos personales</li>
+                    <li><strong>Rectificación:</strong> Corregir datos inexactos</li>
+                    <li><strong>Eliminación:</strong> Solicitar la eliminación de sus datos</li>
+                    <li><strong>Portabilidad:</strong> Recibir sus datos en formato estructurado</li>
+                    <li><strong>Oposición:</strong> Oponerse al procesamiento de sus datos</li>
+                </ul>
+                
+                <h3>6. Retención de Datos</h3>
+                <p>Conservamos sus datos mientras su cuenta esté activa o sea necesario para prestar el servicio. Los reportes y su historial se mantienen para fines estadísticos y de seguimiento de la gestión urbana.</p>
+                
+                <h3>7. Cookies</h3>
+                <p>Utilizamos cookies y tecnologías similares para mejorar su experiencia. Puede configurar su navegador para rechazar cookies, aunque esto puede afectar algunas funcionalidades.</p>
+                
+                <h3>8. Menores de Edad</h3>
+                <p>El servicio está dirigido a personas mayores de 18 años. No recopilamos intencionalmente información de menores de edad.</p>
+                
+                <h3>9. Cambios en la Política</h3>
+                <p>Podemos actualizar esta política periódicamente. Le notificaremos cambios significativos por correo electrónico o mediante un aviso en la plataforma.</p>
+                
+                <h3>10. Contacto</h3>
+                <p>Para ejercer sus derechos o realizar consultas sobre privacidad, contáctenos a través de la sección de contacto de nuestra plataforma.</p>
+            </div>
+            <div class="legal-modal-footer">
+                <button class="btn-primary" onclick="closeModal('privacy-modal')">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estilos para los modales legales -->
+    <style>
+        .legal-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        
+        .legal-modal.active {
+            display: flex;
+        }
+        
+        .legal-modal-content {
+            background: white;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: modalSlideIn 0.3s ease;
+        }
+        
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .legal-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 24px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .legal-modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #1a1a2e;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+        
+        .modal-close:hover {
+            color: #DC143C;
+        }
+        
+        .legal-modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            flex: 1;
+            color: #444;
+            line-height: 1.7;
+        }
+        
+        .legal-modal-body .last-updated {
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        
+        .legal-modal-body h3 {
+            color: #0066FF;
+            font-size: 1.1rem;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+        
+        .legal-modal-body h3:first-of-type {
+            margin-top: 0;
+        }
+        
+        .legal-modal-body p {
+            margin-bottom: 12px;
+        }
+        
+        .legal-modal-body ul {
+            margin: 12px 0;
+            padding-left: 24px;
+        }
+        
+        .legal-modal-body li {
+            margin-bottom: 8px;
+        }
+        
+        .legal-modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+        }
+        
+        .legal-modal-footer .btn-primary {
+            padding: 12px 32px;
+            font-size: 1rem;
+        }
+    </style>
+
+    <!-- Script para manejar los modales -->
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        document.querySelectorAll('.legal-modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+        
+        // Cerrar modal con Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.legal-modal.active').forEach(modal => {
+                    modal.classList.remove('active');
+                });
+                document.body.style.overflow = '';
+            }
+        });
+    </script>
 
 </body>
 </html>

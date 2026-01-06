@@ -5,6 +5,8 @@ let currentRating = 0;
 let allComments = [];
 let currentSort = 'date-desc';
 let currentCategory = '';
+let isSearchingPlaca = false;
+let originalDenuncias = [];
 
 // Elementos del DOM
 const denunciasList = document.getElementById('denuncias-list');
@@ -159,7 +161,10 @@ function createDenunciaCard(denuncia) {
         daysBadgeClass = 'old';
     }
 
-    const imageSrc = denuncia.foto_url ? `${window.location.origin}${denuncia.foto_url}` : null;
+    // Si es URL completa (Cloudinary) usarla directamente, si no agregar el origen
+    const imageSrc = denuncia.foto_url 
+        ? (denuncia.foto_url.startsWith('http') ? denuncia.foto_url : `${window.location.origin}${denuncia.foto_url}`) 
+        : null;
     
     // Acciones según estado
     let actionsHTML = '';
@@ -220,6 +225,12 @@ function createDenunciaCard(denuncia) {
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                         ${denuncia.ciudadano_nombre ? `${denuncia.ciudadano_nombre} ${denuncia.ciudadano_apellido || ''}` : 'Anónimo'}
                     </span>
+                    ${denuncia.placa ? `
+                    <span class="meta-item" style="color:#dc2626;font-weight:600;">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="6" width="22" height="12" rx="2"></rect><line x1="1" y1="12" x2="23" y2="12"></line></svg>
+                        🚗 ${denuncia.placa}
+                    </span>
+                    ` : ''}
                     ${denuncia.latitud ? `
                     <span class="meta-item">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
@@ -377,8 +388,47 @@ function populateModal() {
     document.getElementById('detailTitulo').textContent = d.titulo;
     document.getElementById('detailDescripcion').textContent = d.descripcion;
     document.getElementById('detailCategoria').textContent = d.categoria || '-';
+    
+    // Datos del ciudadano
     document.getElementById('detailCiudadano').textContent = d.ciudadano_nombre ?
         `${d.ciudadano_nombre} ${d.ciudadano_apellido || ''}` : '-';
+    
+    const dniElement = document.getElementById('detailCiudadanoDni');
+    if (dniElement) {
+        dniElement.textContent = d.ciudadano_dni || '-';
+    }
+    
+    const emailElement = document.getElementById('detailCiudadanoEmail');
+    if (emailElement) {
+        emailElement.textContent = d.ciudadano_email || '-';
+    }
+    
+    const fechaRegistroElement = document.getElementById('detailCiudadanoFechaRegistro');
+    if (fechaRegistroElement && d.ciudadano_fecha_registro) {
+        const fechaReg = new Date(d.ciudadano_fecha_registro).toLocaleDateString('es-ES', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        });
+        fechaRegistroElement.textContent = fechaReg;
+    } else if (fechaRegistroElement) {
+        fechaRegistroElement.textContent = '-';
+    }
+    
+    const totalDenunciasElement = document.getElementById('detailCiudadanoTotalDenuncias');
+    if (totalDenunciasElement) {
+        totalDenunciasElement.textContent = d.ciudadano_total_denuncias || '0';
+    }
+    
+    // Placa (si existe)
+    const placaElement = document.getElementById('detailPlaca');
+    const placaContainer = document.getElementById('placaContainer');
+    if (placaElement) {
+        placaElement.textContent = d.placa || '-';
+    }
+    if (placaContainer) {
+        placaContainer.style.display = d.placa ? 'block' : 'none';
+    }
 
     // Ubicación
     const ubicacion = d.latitud && d.longitud ?
@@ -751,3 +801,131 @@ setInterval(loadDenuncias, 30000);
 // Exponer funciones globalmente para los onclick en HTML
 window.quickChangeStatus = quickChangeStatus;
 window.openDenunciaDetail = openDenunciaDetail;
+
+// ========== BÚSQUEDA POR PLACA ==========
+(function initPlacaSearch() {
+    const searchPlacaInput = document.getElementById('searchPlacaInput');
+    const searchPlacaBtn = document.getElementById('searchPlacaBtn');
+    const clearSearchBtn = document.getElementById('clearSearchBtn');
+    
+    if (!searchPlacaInput || !searchPlacaBtn) return;
+    
+    // Buscar por placa
+    async function searchByPlaca() {
+        const placa = searchPlacaInput.value.trim();
+        
+        if (!placa) {
+            showNotification('Ingresa una placa para buscar', 'warning');
+            return;
+        }
+        
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`${window.location.origin}/api/denuncias/buscar-placa?placa=${encodeURIComponent(placa)}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            
+            if (!response.ok) throw new Error('Error en la búsqueda');
+            
+            const results = await response.json();
+            
+            // Guardar denuncias originales si no están guardadas
+            if (!isSearchingPlaca) {
+                originalDenuncias = [...denuncias];
+            }
+            
+            isSearchingPlaca = true;
+            denuncias = results;
+            renderDenuncias();
+            updateCounts();
+            
+            // Mostrar info de búsqueda
+            clearSearchBtn.classList.add('visible');
+            
+            if (results.length === 0) {
+                showNotification(`No se encontraron denuncias con placa "${placa.toUpperCase()}"`, 'info');
+            } else {
+                showNotification(`Se encontraron ${results.length} denuncia(s) con placa "${placa.toUpperCase()}"`, 'success');
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            showNotification('Error al buscar por placa', 'error');
+        }
+    }
+    
+    // Limpiar búsqueda
+    function clearSearch() {
+        searchPlacaInput.value = '';
+        clearSearchBtn.classList.remove('visible');
+        
+        if (isSearchingPlaca && originalDenuncias.length > 0) {
+            denuncias = [...originalDenuncias];
+            isSearchingPlaca = false;
+            renderDenuncias();
+            updateCounts();
+            showNotification('Búsqueda limpiada', 'info');
+        }
+    }
+    
+    // Event listeners
+    searchPlacaBtn.addEventListener('click', searchByPlaca);
+    
+    searchPlacaInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            searchByPlaca();
+        }
+    });
+    
+    clearSearchBtn.addEventListener('click', clearSearch);
+})();
+
+// ========== LIGHTBOX PARA IMAGEN ==========
+(function initImageLightbox() {
+    const lightbox = document.getElementById('imageLightbox');
+    const lightboxImage = document.getElementById('lightboxImage');
+    const closeLightboxBtn = document.getElementById('closeLightbox');
+    const imageContainer = document.querySelector('.image-container-compact');
+    const denunciaImage = document.getElementById('denunciaImage');
+    
+    if (!lightbox || !imageContainer) return;
+    
+    // Abrir lightbox al hacer click en la imagen
+    imageContainer.addEventListener('click', function() {
+        if (denunciaImage && denunciaImage.style.display !== 'none' && denunciaImage.src) {
+            lightboxImage.src = denunciaImage.src;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+    });
+    
+    // Cerrar lightbox
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+    
+    // Cerrar con botón X
+    if (closeLightboxBtn) {
+        closeLightboxBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            closeLightbox();
+        });
+    }
+    
+    // Cerrar al hacer click fuera de la imagen
+    lightbox.addEventListener('click', function(e) {
+        if (e.target === lightbox) {
+            closeLightbox();
+        }
+    });
+    
+    // Cerrar con tecla Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            closeLightbox();
+        }
+    });
+})();

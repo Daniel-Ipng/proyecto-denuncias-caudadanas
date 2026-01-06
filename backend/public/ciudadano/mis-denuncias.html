@@ -37,10 +37,10 @@
 <body>
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="logo">
+        <a href="../index.html" class="logo" style="text-decoration:none;">
             <div class="logo-icon"></div>
             <span>Reporte Urbano</span>
-        </div>
+        </a>
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -101,9 +101,20 @@
 
         <!-- Filters and Search -->
         <section class="filters-section">
-            <div class="search-bar">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
-                <input type="text" id="searchInput" placeholder="Buscar denuncias...">
+            <div class="search-row">
+                <div class="search-bar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
+                    <input type="text" id="searchInput" placeholder="Buscar denuncias...">
+                </div>
+                <div class="search-placa-box">
+                    <input type="text" id="searchPlacaInput" placeholder="Placa (ej: ABC-123)" maxlength="10">
+                    <button id="searchPlacaBtn" class="placa-search-btn" title="Buscar por placa">🔍</button>
+                    <button id="clearPlacaBtn" class="placa-clear-btn" title="Limpiar búsqueda">✕</button>
+                </div>
+                <a href="nueva-denuncia.html" class="btn-new-report">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    Nueva Denuncia
+                </a>
             </div>
             <div class="filter-buttons">
                 <button class="filter-btn active" data-filter="all">Todas <span class="count" id="count-all">0</span></button>
@@ -112,11 +123,68 @@
                 <button class="filter-btn" data-filter="resuelto">Resueltas <span class="count" id="count-resolved">0</span></button>
                 <button class="filter-btn" data-filter="rechazado">Rechazadas <span class="count" id="count-rejected">0</span></button>
             </div>
-            <a href="nueva-denuncia.html" class="btn-new-report">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                Nueva Denuncia
-            </a>
         </section>
+        
+        <style>
+            .search-row {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                width: 100%;
+                flex-wrap: wrap;
+            }
+            .search-placa-box {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                background: #f9fafb;
+                border: 1px solid #e5e7eb;
+                border-radius: 8px;
+                padding: 4px;
+            }
+            .search-placa-box input {
+                width: 130px;
+                padding: 8px 10px;
+                border: none;
+                background: transparent;
+                font-size: 13px;
+                text-transform: uppercase;
+                outline: none;
+            }
+            .search-placa-box input::placeholder {
+                text-transform: none;
+                color: #9ca3af;
+            }
+            .placa-search-btn {
+                padding: 8px 12px;
+                background: linear-gradient(135deg, #0066FF 0%, #0052CC 100%);
+                color: white;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+            }
+            .placa-search-btn:hover {
+                background: linear-gradient(135deg, #0052CC 0%, #003d99 100%);
+            }
+            .placa-clear-btn {
+                padding: 8px 10px;
+                background: #fee2e2;
+                color: #dc2626;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 12px;
+                font-weight: 600;
+                display: none;
+            }
+            .placa-clear-btn.visible {
+                display: block;
+            }
+            .placa-clear-btn:hover {
+                background: #fecaca;
+            }
+        </style>
 
         <!-- Denuncias List -->
         <section class="denuncias-list" id="denuncias-list">
@@ -156,6 +224,10 @@
                     <div class="detail-item small">
                         <div class="detail-label">Ubicación</div>
                         <div class="detail-value" id="detailUbicacion">-</div>
+                    </div>
+                    <div class="detail-item small" id="placaContainer" style="display:none;">
+                        <div class="detail-label">🚗 Placa del Vehículo</div>
+                        <div class="detail-value" id="detailPlaca" style="color:#dc2626;font-weight:700;">-</div>
                     </div>
                 </div>
                 <div class="detail-right">

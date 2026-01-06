@@ -6,6 +6,7 @@ const denunciaController = require('../controllers/denunciaController');
 // Rutas públicas (sin autenticación)
 router.get('/categorias', denunciaController.obtenerCategorias);
 router.get('/todas', denunciaController.obtenerTodasDenuncias);
+router.get('/buscar-placa', denunciaController.buscarPorPlaca);
 
 // Aplicamos el middleware a todas las rutas de este archivo
 router.use(authMiddleware);

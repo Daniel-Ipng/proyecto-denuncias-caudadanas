@@ -46,16 +46,38 @@ async function cargarPerfil() {
 
 // Cargar notificaciones
 async function cargarNotificaciones() {
+    const container = document.getElementById('notificationsContainer');
+    
+    // Mostrar estado de carga
+    if (container) {
+        container.innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                Cargando notificaciones...
+            </div>
+        `;
+    }
+    
     try {
         const token = localStorage.getItem('token');
+        if (!token) {
+            mostrarEstadoVacio('No hay sesión activa');
+            return;
+        }
+        
         const response = await fetch(`${API_URL}/denuncias/todas`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         
         if (response.ok) {
             const denuncias = await response.json();
-            generarNotificaciones(denuncias);
+            if (Array.isArray(denuncias)) {
+                generarNotificaciones(denuncias);
+            } else {
+                mostrarEstadoVacio('Formato de datos incorrecto');
+            }
         } else {
+            console.error('Error response:', response.status);
             mostrarEstadoVacio('Error al cargar notificaciones');
         }
     } catch (error) {
@@ -80,7 +102,7 @@ function generarNotificaciones(denuncias) {
                 denunciaId: denuncia.id,
                 tipo: 'new',
                 titulo: 'Nueva Denuncia Recibida',
-                mensaje: `${denuncia.nombre} ${denuncia.apellido} reportó: ${denuncia.titulo}`,
+                mensaje: `${denuncia.ciudadano_nombre || 'Ciudadano'} ${denuncia.ciudadano_apellido || ''} reportó: ${denuncia.titulo}`,
                 fecha: denuncia.fecha_creacion,
                 leida: notificacionesLeidas.includes(`new-${denuncia.id}`)
             });
@@ -221,15 +243,20 @@ function actualizarNotificaciones() {
 function actualizarContadores() {
     const noLeidas = todasLasNotificaciones.filter(n => !n.leida).length;
     
-    document.getElementById('countAll').textContent = todasLasNotificaciones.length;
-    document.getElementById('countUnread').textContent = noLeidas;
+    const countAll = document.getElementById('countAll');
+    const countUnread = document.getElementById('countUnread');
+    
+    if (countAll) countAll.textContent = todasLasNotificaciones.length;
+    if (countUnread) countUnread.textContent = noLeidas;
     
     const badge = document.getElementById('badgeCount');
-    if (noLeidas > 0) {
-        badge.textContent = noLeidas;
-        badge.style.display = 'block';
-    } else {
-        badge.style.display = 'none';
+    if (badge) {
+        if (noLeidas > 0) {
+            badge.textContent = noLeidas;
+            badge.style.display = 'block';
+        } else {
+            badge.style.display = 'none';
+        }
     }
 }
 

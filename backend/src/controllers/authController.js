@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const db = require('../config/db');
+const { Usuario } = require('../models');
 
 // --- Registro de Usuario ---
 exports.registrarUsuario = async (req, res) => {
@@ -14,48 +14,43 @@ exports.registrarUsuario = async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const password_hash = await bcrypt.hash(password, salt);
 
-        const query = 'INSERT INTO usuarios (nombre, apellido, dni, email, password_hash, rol) VALUES (?, ?, ?, ?, ?, ?)';
-        
-        db.query(query, [nombre, apellido, dni, email, password_hash, rol], (err, result) => {
-            if (err) {
-                if (err.code === 'ER_DUP_ENTRY') return res.status(409).json({ message: 'El email o DNI ya existen' });
-                return res.status(500).json({ message: 'Error del servidor' });
-            }
-            res.status(201).json({ message: 'Usuario creado' });
-        });
-    } catch (error) {
-        res.status(500).json({ message: 'Error al procesar la contraseña' });
+        await Usuario.create({ nombre, apellido, dni, email, password_hash, rol });
+        res.status(201).json({ message: 'Usuario creado' });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'El email o DNI ya existen' });
+        }
+        console.error('Error al registrar usuario:', err);
+        res.status(500).json({ message: 'Error del servidor' });
     }
 };
 
 // --- Iniciar Sesión ---
-exports.iniciarSesion = (req, res) => {
+exports.iniciarSesion = async (req, res) => {
     const { email, password } = req.body;
     
     if (!email || !password) {
         return res.status(400).json({ message: 'Email y contraseña son requeridos' });
     }
     
-    const query = 'SELECT * FROM usuarios WHERE email = ?';
-    
-    db.query(query, [email], async (err, results) => {
-        if (err) {
-            console.error('Error de base de datos:', err);
-            return res.status(500).json({ message: 'Error del servidor' });
-        }
+    try {
+        const usuario = await Usuario.findByEmail(email);
         
-        if (results.length === 0) {
+        if (!usuario) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
         
-        const usuario = results[0];
         const esValida = await bcrypt.compare(password, usuario.password_hash);
         
         if (!esValida) {
             return res.status(401).json({ message: 'Credenciales inválidas' });
         }
         
-        const token = jwt.sign({ id: usuario.id, rol: usuario.rol }, process.env.JWT_SECRET, { expiresIn: '24h' });
+        const token = jwt.sign(
+            { id: usuario.id, rol: usuario.rol }, 
+            process.env.JWT_SECRET, 
+            { expiresIn: '24h' }
+        );
         
         res.json({ 
             message: 'Login OK', 
@@ -66,52 +61,55 @@ exports.iniciarSesion = (req, res) => {
                 nombre: usuario.nombre 
             } 
         });
-    });
+    } catch (err) {
+        console.error('Error de base de datos:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 };
 
 // --- Obtener Datos del Usuario (Perfil) ---
-exports.obtenerPerfil = (req, res) => {
-    const usuarioId = req.usuario.id;
-    const query = 'SELECT id, nombre, apellido, email, dni, rol, fecha_creacion FROM usuarios WHERE id = ?';
-    
-    db.query(query, [usuarioId], (err, results) => {
-        if (err) return res.status(500).json({ message: 'Error del servidor' });
-        if (results.length === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
+exports.obtenerPerfil = async (req, res) => {
+    try {
+        const usuario = await Usuario.findById(req.usuario.id);
         
-        res.json(results[0]);
-    });
+        if (!usuario) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
+        
+        res.json(usuario);
+    } catch (err) {
+        console.error('Error al obtener perfil:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 };
 
 // --- Actualizar Perfil de Usuario ---
-exports.actualizarPerfil = (req, res) => {
-    const usuarioId = req.usuario.id;
+exports.actualizarPerfil = async (req, res) => {
     const { nombre, apellido, email } = req.body;
 
     if (!nombre || !apellido || !email) {
         return res.status(400).json({ message: 'Nombre, apellido y email son obligatorios' });
     }
 
-    const query = 'UPDATE usuarios SET nombre = ?, apellido = ?, email = ? WHERE id = ?';
-    
-    db.query(query, [nombre, apellido, email, usuarioId], (err, result) => {
-        if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(409).json({ message: 'El email ya está en uso' });
-            }
-            return res.status(500).json({ message: 'Error del servidor' });
-        }
+    try {
+        const actualizado = await Usuario.update(req.usuario.id, { nombre, apellido, email });
 
-        if (result.affectedRows === 0) {
+        if (!actualizado) {
             return res.status(404).json({ message: 'Usuario no encontrado' });
         }
 
         res.json({ message: 'Perfil actualizado correctamente' });
-    });
+    } catch (err) {
+        if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'El email ya está en uso' });
+        }
+        console.error('Error al actualizar perfil:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 };
 
 // --- Cambiar Contraseña ---
-exports.cambiarContrasena = (req, res) => {
-    const usuarioId = req.usuario.id;
+exports.cambiarContrasena = async (req, res) => {
     const { passwordActual, passwordNueva } = req.body;
 
     if (!passwordActual || !passwordNueva) {
@@ -122,34 +120,29 @@ exports.cambiarContrasena = (req, res) => {
         return res.status(400).json({ message: 'La nueva contraseña debe tener al menos 6 caracteres' });
     }
 
-    // Obtener la contraseña actual del usuario
-    const query = 'SELECT password_hash FROM usuarios WHERE id = ?';
-    
-    db.query(query, [usuarioId], async (err, results) => {
-        if (err) return res.status(500).json({ message: 'Error del servidor' });
-        if (results.length === 0) return res.status(404).json({ message: 'Usuario no encontrado' });
-
-        const usuario = results[0];
+    try {
+        // Obtener usuario con contraseña
+        const usuarioBase = await Usuario.findById(req.usuario.id);
+        if (!usuarioBase) {
+            return res.status(404).json({ message: 'Usuario no encontrado' });
+        }
         
-        // Verificar que la contraseña actual sea correcta
+        const usuario = await Usuario.findByEmail(usuarioBase.email);
+
+        // Verificar contraseña actual
         const esValida = await bcrypt.compare(passwordActual, usuario.password_hash);
         if (!esValida) {
             return res.status(401).json({ message: 'La contraseña actual es incorrecta' });
         }
 
-        try {
-            // Hashear la nueva contraseña
-            const salt = await bcrypt.genSalt(10);
-            const password_hash = await bcrypt.hash(passwordNueva, salt);
-
-            // Actualizar la contraseña en la BD
-            const updateQuery = 'UPDATE usuarios SET password_hash = ? WHERE id = ?';
-            db.query(updateQuery, [password_hash, usuarioId], (err, result) => {
-                if (err) return res.status(500).json({ message: 'Error del servidor' });
-                res.json({ message: 'Contraseña actualizada correctamente' });
-            });
-        } catch (error) {
-            res.status(500).json({ message: 'Error al procesar la contraseña' });
-        }
-    });
+        // Hashear nueva contraseña y actualizar
+        const salt = await bcrypt.genSalt(10);
+        const password_hash = await bcrypt.hash(passwordNueva, salt);
+        
+        await Usuario.updatePassword(req.usuario.id, password_hash);
+        res.json({ message: 'Contraseña actualizada correctamente' });
+    } catch (err) {
+        console.error('Error al cambiar contraseña:', err);
+        res.status(500).json({ message: 'Error del servidor' });
+    }
 };

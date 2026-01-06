@@ -113,10 +113,216 @@
         }
         
         .modal-body {
-            padding: 24px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .detail-row-top {
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+        
+        .image-container-compact {
+            width: 180px;
+            height: 180px;
+            min-width: 180px;
+            border-radius: 12px;
+            overflow: hidden;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .image-container-compact:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        .image-container-compact::after {
+            content: '🔍';
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .image-container-compact:hover::after {
+            opacity: 1;
+        }
+        
+        .image-container-compact img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        /* Lightbox para imagen ampliada */
+        .image-lightbox {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            cursor: zoom-out;
+        }
+        
+        .image-lightbox.active {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .image-lightbox img {
+            max-width: 90%;
+            max-height: 90vh;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+        }
+        
+        .lightbox-close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 32px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .lightbox-close:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.1);
+        }
+        
+        .info-grid {
+            flex: 1;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 24px;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .info-item {
+            background: #f9fafb;
+            padding: 10px 12px;
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .info-label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-transform: uppercase;
+            margin-bottom: 2px;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+        
+        .descripcion-box {
+            background: #f9fafb;
+            padding: 12px 16px;
+            border-radius: 10px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .descripcion-box p {
+            margin: 4px 0 0 0;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #374151;
+        }
+        
+        .detail-row-bottom {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 16px;
+        }
+        
+        .ciudadano-card, .estado-card {
+            background: #f0f9ff;
+            border-radius: 10px;
+            padding: 14px;
+            border-left: 4px solid #3b82f6;
+        }
+        
+        .estado-card {
+            background: #fef3c7;
+            border-left-color: #f59e0b;
+        }
+        
+        .card-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+        
+        .estado-card .card-title {
+            color: #92400e;
+        }
+        
+        .ciudadano-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .ciudadano-item {
+            font-size: 12px;
+            color: #6b7280;
+        }
+        
+        .ciudadano-item strong {
+            display: block;
+            color: #1f2937;
+            font-size: 13px;
+        }
+        
+        .badge-green {
+            background: #d1fae5;
+            color: #059669;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        
+        .estado-label {
+            display: block;
+            font-size: 12px;
+            color: #92400e;
+            margin-bottom: 6px;
         }
         
         .detail-section {
@@ -230,67 +436,67 @@
         }
         
         .comments-section {
-            grid-column: 1 / -1;
             border-top: 2px solid #f3f4f6;
-            padding-top: 24px;
+            padding-top: 16px;
         }
         
         .comments-title {
-            font-size: 18px;
-            font-weight: 800;
+            font-size: 15px;
+            font-weight: 700;
             color: #1a1a1a;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         
         .comments-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            max-height: 300px;
+            gap: 8px;
+            max-height: 150px;
             overflow-y: auto;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
             padding-right: 8px;
         }
         
         .comment {
             background: #f9fafb;
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            border-left: 4px solid var(--accent-color);
+            border-left: 3px solid var(--accent-color);
         }
         
         .comment-author {
             font-weight: 700;
             color: var(--primary-color);
-            font-size: 13px;
+            font-size: 12px;
         }
         
         .comment-date {
-            font-size: 12px;
+            font-size: 11px;
             color: #9ca3af;
         }
         
         .comment-text {
-            margin-top: 6px;
+            margin-top: 4px;
             color: #4b5563;
-            line-height: 1.5;
+            line-height: 1.4;
+            font-size: 13px;
         }
         
         .comment-form {
             display: flex;
-            flex-direction: column;
-            gap: 12px;
+            gap: 10px;
+            align-items: flex-end;
         }
         
         .comment-input {
-            width: 100%;
-            padding: 12px;
+            flex: 1;
+            padding: 10px;
             border: 2px solid #e5e7eb;
             border-radius: 8px;
             font-family: inherit;
-            font-size: 14px;
-            resize: vertical;
-            min-height: 80px;
+            font-size: 13px;
+            resize: none;
+            height: 60px;
             transition: border-color 0.3s;
         }
         
@@ -298,6 +504,21 @@
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 3px rgba(220, 20, 60, 0.1);
+        }
+        
+        .btn-send {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-send:hover {
+            background: #b91c3c;
         }
         
         .modal-footer {
@@ -690,6 +911,79 @@
             border-color: var(--primary-color);
         }
         
+        /* Buscador de placa */
+        .search-placa-container {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 4px;
+            flex-shrink: 0;
+        }
+        
+        .search-placa-input {
+            width: 150px;
+            padding: 8px 10px;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            text-transform: uppercase;
+            outline: none;
+        }
+        
+        .search-placa-input:focus {
+            outline: none;
+        }
+        
+        .search-placa-input::placeholder {
+            text-transform: none;
+            color: #9ca3af;
+        }
+        
+        .search-placa-btn {
+            padding: 8px 14px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        
+        .search-placa-btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .clear-search-btn {
+            padding: 8px 12px;
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            display: none;
+            white-space: nowrap;
+        }
+        
+        .clear-search-btn.visible {
+            display: flex;
+            align-items: center;
+        }
+        
+        .clear-search-btn:hover {
+            background: #fecaca;
+        }
+        
         /* Días transcurridos */
         .days-badge {
             font-size: 11px;
@@ -714,12 +1008,29 @@
         }
         
         @media (max-width: 768px) {
-            .modal-body {
+            .detail-row-top {
+                flex-direction: column;
+            }
+            
+            .image-container-compact {
+                width: 100%;
+                height: 150px;
+            }
+            
+            .info-grid {
                 grid-template-columns: 1fr;
             }
             
-            .comments-section {
-                grid-column: 1;
+            .detail-row-bottom {
+                grid-template-columns: 1fr;
+            }
+            
+            .ciudadano-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .comment-form {
+                flex-direction: column;
             }
             
             .denuncia-card {
@@ -735,10 +1046,10 @@
 <body>
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="logo">
+        <a href="../index.html" class="logo" style="text-decoration:none;">
             <div class="logo-icon"></div>
             <span>Reporte Urbano</span>
-        </div>
+        </a>
         <nav class="sidebar-nav">
             <a href="dashboard.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
@@ -751,10 +1062,6 @@
             <a href="mapa.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
                 <span>Mapa</span>
-            </a>
-            <a href="reportes.html" class="nav-item">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                <span>Reportes</span>
             </a>
             <a href="usuarios.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
@@ -864,6 +1171,20 @@
 
         <!-- Filtros adicionales -->
         <div class="filters-row">
+            <!-- Buscador por placa -->
+            <div class="search-placa-container">
+                <input type="text" id="searchPlacaInput" class="search-placa-input" placeholder="Buscar por placa (ej: ABC-123)" maxlength="10">
+                <button id="searchPlacaBtn" class="search-placa-btn">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    Buscar
+                </button>
+                <button id="clearSearchBtn" class="clear-search-btn">
+                    ✕ Limpiar
+                </button>
+            </div>
             <select class="filter-select" id="categoryFilter">
                 <option value="">Todas las categorías</option>
                 <option value="Baches">Baches</option>
@@ -913,48 +1234,78 @@
                 <button class="close-btn" id="closeModal">&times;</button>
             </div>
             <div class="modal-body">
-                <!-- Columna Izquierda: Imagen y Detalles -->
-                <div class="detail-section">
-                    <div class="image-container">
+                <!-- Fila Superior: Imagen + Info Principal -->
+                <div class="detail-row-top">
+                    <!-- Imagen -->
+                    <div class="image-container-compact">
                         <img id="denunciaImage" src="" alt="Evidencia" style="display: none;">
-                        <div id="noImagePlaceholder" class="no-image">Sin imagen adjunta</div>
+                        <div id="noImagePlaceholder" class="no-image">📷 Sin imagen</div>
                     </div>
                     
-                    <div class="detail-item">
-                        <div class="detail-label">Categoría</div>
-                        <div class="detail-value" id="detailCategoria"></div>
-                    </div>
-                    
-                    <div class="detail-item">
-                        <div class="detail-label">Ubicación</div>
-                        <div class="detail-value" id="detailUbicacion"></div>
-                    </div>
-                    
-                    <div class="detail-item">
-                        <div class="detail-label">Fecha</div>
-                        <div class="detail-value" id="detailFecha"></div>
-                    </div>
-
-                    <div class="detail-item">
-                        <div class="detail-label">Ciudadano</div>
-                        <div class="detail-value" id="detailCiudadano"></div>
+                    <!-- Info de la denuncia -->
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Título</span>
+                            <span class="info-value" id="detailTitulo"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Categoría</span>
+                            <span class="info-value" id="detailCategoria"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Ubicación</span>
+                            <span class="info-value" id="detailUbicacion"></span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Fecha</span>
+                            <span class="info-value" id="detailFecha"></span>
+                        </div>
+                        <div class="info-item" id="placaContainer" style="display: none;">
+                            <span class="info-label">🚗 Placa</span>
+                            <span class="info-value" id="detailPlaca" style="color: #dc2626; font-weight: 700;"></span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Columna Derecha: Descripción y Gestión -->
-                <div class="detail-section">
-                    <div class="detail-item">
-                        <div class="detail-label">Título</div>
-                        <div class="detail-value" id="detailTitulo"></div>
-                    </div>
-                    
-                    <div class="detail-item">
-                        <div class="detail-label">Descripción</div>
-                        <div class="detail-value" id="detailDescripcion" style="font-weight: 400; line-height: 1.5;"></div>
+                <!-- Descripción -->
+                <div class="descripcion-box">
+                    <span class="info-label">Descripción</span>
+                    <p id="detailDescripcion"></p>
+                </div>
+
+                <!-- Fila: Ciudadano + Estado -->
+                <div class="detail-row-bottom">
+                    <!-- Datos del ciudadano -->
+                    <div class="ciudadano-card">
+                        <div class="card-title">👤 Ciudadano</div>
+                        <div class="ciudadano-grid">
+                            <div class="ciudadano-item">
+                                <span>Nombre:</span>
+                                <strong id="detailCiudadano"></strong>
+                            </div>
+                            <div class="ciudadano-item">
+                                <span>DNI:</span>
+                                <strong id="detailCiudadanoDni"></strong>
+                            </div>
+                            <div class="ciudadano-item">
+                                <span>Email:</span>
+                                <strong id="detailCiudadanoEmail" style="color: #3b82f6;"></strong>
+                            </div>
+                            <div class="ciudadano-item">
+                                <span>Registro:</span>
+                                <strong id="detailCiudadanoFechaRegistro"></strong>
+                            </div>
+                            <div class="ciudadano-item">
+                                <span>Denuncias:</span>
+                                <strong id="detailCiudadanoTotalDenuncias" class="badge-green"></strong>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="status-change-section">
-                        <div class="status-label">Estado de la Denuncia</div>
+                    <!-- Control de estado -->
+                    <div class="estado-card">
+                        <div class="card-title">⚙️ Gestión</div>
+                        <label class="estado-label">Estado de la Denuncia</label>
                         <select id="statusSelect" class="status-select">
                             <option value="recibido">Recibido (Por Revisar)</option>
                             <option value="en_progreso">En Atención</option>
@@ -964,15 +1315,13 @@
                     </div>
                 </div>
 
-                <!-- Sección de Comentarios (Full Width) -->
+                <!-- Sección de Comentarios -->
                 <div class="comments-section">
-                    <h3 class="comments-title">Seguimiento y Comentarios</h3>
-                    <div class="comments-list" id="commentsList">
-                        <!-- Comentarios dinámicos -->
-                    </div>
+                    <h3 class="comments-title">💬 Seguimiento</h3>
+                    <div class="comments-list" id="commentsList"></div>
                     <div class="comment-form">
                         <textarea id="commentInput" class="comment-input" placeholder="Escribe una respuesta para el ciudadano..."></textarea>
-                        <button id="sendCommentBtn" class="btn-view-detail" style="align-self: flex-end;">Enviar Comentario</button>
+                        <button id="sendCommentBtn" class="btn-send">Enviar</button>
                     </div>
                 </div>
             </div>
@@ -981,6 +1330,12 @@
                 <button class="btn-save" id="saveChangesBtn">Guardar Cambios</button>
             </div>
         </div>
+    </div>
+
+    <!-- Lightbox para imagen ampliada -->
+    <div class="image-lightbox" id="imageLightbox">
+        <button class="lightbox-close" id="closeLightbox">&times;</button>
+        <img id="lightboxImage" src="" alt="Imagen ampliada">
     </div>
 
     <script src="../js/user-profile.js"></script>

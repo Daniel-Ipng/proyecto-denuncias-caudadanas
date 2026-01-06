@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "kill": "taskkill /F /IM node.exe 2>nul || echo No hay procesos node",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
@@ -16,11 +17,13 @@
   "description": "",
   "dependencies": {
     "bcryptjs": "^3.0.3",
+    "cloudinary": "^2.8.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "multer": "^2.0.2",
-    "mysql2": "^3.15.3"
+    "mysql2": "^3.15.3",
+    "node-fetch": "^2.7.0"
   }
 }
