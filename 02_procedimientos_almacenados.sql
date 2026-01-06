@@ -16,6 +16,7 @@ DROP PROCEDURE IF EXISTS sp_obtener_detalle_denuncia;
 DROP PROCEDURE IF EXISTS sp_actualizar_estado_denuncia;
 DROP PROCEDURE IF EXISTS sp_agregar_comentario;
 DROP PROCEDURE IF EXISTS sp_obtener_comentarios;
+DROP PROCEDURE IF EXISTS sp_buscar_por_placa;
 
 DELIMITER //
 
@@ -169,6 +170,24 @@ BEGIN
     JOIN usuarios u ON cs.id_usuario = u.id
     WHERE cs.id_denuncia = p_id_denuncia
     ORDER BY cs.fecha ASC;
+END //
+
+-- =================================================================
+-- 11. Buscar denuncias por placa de vehículo
+-- =================================================================
+CREATE PROCEDURE sp_buscar_por_placa(IN p_placa VARCHAR(20))
+BEGIN
+    SELECT 
+        d.id, d.folio, d.titulo, d.descripcion, d.placa, d.estado, 
+        d.fecha_creacion, d.latitud, d.longitud, d.fecha_actualizacion,
+        c.nombre AS categoria,
+        u.nombre AS usuario_nombre, u.apellido AS usuario_apellido,
+        (SELECT url_imagen FROM imagenes_denuncia WHERE id_denuncia = d.id LIMIT 1) AS imagen_url
+    FROM denuncias d
+    JOIN categorias c ON d.id_categoria = c.id
+    JOIN usuarios u ON d.id_usuario = u.id
+    WHERE d.placa LIKE CONCAT('%', UPPER(p_placa), '%')
+    ORDER BY d.fecha_creacion DESC;
 END //
 
 DELIMITER ;

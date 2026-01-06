@@ -114,7 +114,7 @@ function generarNotificaciones(denuncias) {
                 id: `alert-${denuncia.id}`,
                 denunciaId: denuncia.id,
                 tipo: 'alert',
-                titulo: '⚠️ Denuncia sin Atender',
+                titulo: 'Denuncia sin Atender',
                 mensaje: `La denuncia "${denuncia.titulo}" lleva ${diasTranscurridos} días sin atención`,
                 fecha: denuncia.fecha_creacion,
                 leida: notificacionesLeidas.includes(`alert-${denuncia.id}`)

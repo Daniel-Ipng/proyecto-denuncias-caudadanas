@@ -155,12 +155,12 @@ const connection = mysql.createConnection({
     multipleStatements: true
 });
 
-console.log('✅ Conectando a la base de datos...');
+console.log('[INFO] Conectando a la base de datos...');
 
 // Función para ejecutar queries secuencialmente
 function executeSequentially(queries, index = 0) {
     if (index >= queries.length) {
-        console.log('\n✅ ¡Todos los procedimientos creados exitosamente!');
+        console.log('\n[OK] Todos los procedimientos creados exitosamente!');
         
         // Verificar procedimientos creados
         connection.query(
@@ -168,7 +168,7 @@ function executeSequentially(queries, index = 0) {
             [process.env.DB_NAME],
             (err, rows) => {
                 if (!err) {
-                    console.log(`\n📋 Procedimientos en la base de datos (${rows.length}):`);
+                    console.log(`\nProcedimientos en la base de datos (${rows.length}):`);
                     rows.forEach(row => console.log(`   - ${row.ROUTINE_NAME}`));
                 }
                 connection.end();
@@ -182,10 +182,10 @@ function executeSequentially(queries, index = 0) {
     
     connection.query(query, (err) => {
         if (err) {
-            console.error(`   ❌ ${name}: ${err.message}`);
+            console.error(`   [ERROR] ${name}: ${err.message}`);
         } else {
             if (query.startsWith('CREATE')) {
-                console.log(`   ✅ ${name}`);
+                console.log(`   [OK] ${name}`);
             }
         }
         executeSequentially(queries, index + 1);
@@ -193,15 +193,15 @@ function executeSequentially(queries, index = 0) {
 }
 
 // Primero eliminar, luego crear
-console.log('🔄 Eliminando procedimientos existentes...');
+console.log('[INFO] Eliminando procedimientos existentes...');
 const allQueries = [...dropStatements, ...procedures];
 
 connection.connect((err) => {
     if (err) {
-        console.error('❌ Error de conexión:', err.message);
+        console.error('[ERROR] Error de conexión:', err.message);
         return;
     }
-    console.log('✅ Conectado a la base de datos\n');
-    console.log('🔄 Creando procedimientos almacenados...\n');
+    console.log('[OK] Conectado a la base de datos\n');
+    console.log('[INFO] Creando procedimientos almacenados...\n');
     executeSequentially(allQueries);
 });

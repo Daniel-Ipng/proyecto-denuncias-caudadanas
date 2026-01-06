@@ -161,23 +161,9 @@ class Denuncia {
     // Buscar denuncias por placa de vehículo
     static findByPlaca(placa) {
         return new Promise((resolve, reject) => {
-            const query = `
-                SELECT 
-                    d.id, d.folio, d.titulo, d.descripcion, d.placa, d.estado, 
-                    d.fecha_creacion, d.latitud, d.longitud,
-                    c.nombre AS categoria,
-                    u.nombre AS usuario_nombre, u.apellido AS usuario_apellido,
-                    (SELECT url_imagen FROM imagenes_denuncia WHERE id_denuncia = d.id LIMIT 1) AS imagen_url
-                FROM denuncias d
-                JOIN categorias c ON d.id_categoria = c.id
-                JOIN usuarios u ON d.id_usuario = u.id
-                WHERE d.placa LIKE ?
-                ORDER BY d.fecha_creacion DESC
-            `;
-            const searchTerm = `%${placa.toUpperCase()}%`;
-            db.query(query, [searchTerm], (err, results) => {
+            db.query('CALL sp_buscar_por_placa(?)', [placa], (err, results) => {
                 if (err) return reject(err);
-                resolve(results);
+                resolve(results[0]);
             });
         });
     }

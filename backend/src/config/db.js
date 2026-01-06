@@ -28,7 +28,7 @@ const pool = mysql.createPool(dbConfig);
 // Verificar la conexión inicial
 pool.getConnection((err, connection) => {
     if (err) {
-        console.error('❌ Error de conexión a la base de datos:', err);
+        console.error('[ERROR] Error de conexión a la base de datos:', err);
         console.error('Configuración intentada:', {
             host: dbConfig.host,
             user: dbConfig.user,
@@ -37,7 +37,7 @@ pool.getConnection((err, connection) => {
         });
         return;
     }
-    console.log('✅ Conectado exitosamente a la base de datos MySQL.');
+    console.log('[OK] Conectado exitosamente a la base de datos MySQL.');
     connection.release(); // Liberar la conexión al pool
 });
 
@@ -45,13 +45,13 @@ pool.getConnection((err, connection) => {
 pool.on('error', (err) => {
     console.error('Error de base de datos:', err);
     if (err.code === 'PROTOCOL_CONNECTION_LOST') {
-        console.log('⚠️  Conexión perdida - el pool manejará la reconexión automáticamente');
+        console.log('[WARN] Conexión perdida - el pool manejará la reconexión automáticamente');
     } else if (err.code === 'ER_CON_COUNT_ERROR') {
-        console.error('⚠️  La base de datos tiene demasiadas conexiones');
+        console.error('[WARN] La base de datos tiene demasiadas conexiones');
     } else if (err.code === 'ECONNREFUSED') {
-        console.error('⚠️  Conexión rechazada a la base de datos');
+        console.error('[WARN] Conexión rechazada a la base de datos');
     } else {
-        console.error('⚠️  Error no manejado:', err.code);
+        console.error('[WARN] Error no manejado:', err.code);
     }
 });
 
